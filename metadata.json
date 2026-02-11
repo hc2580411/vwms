@@ -1,0 +1,5 @@
+{
+  "name": "Veik Warehouse Management System",
+  "description": "A comprehensive, bilingual inventory and sales management system for small businesses. Features SQLite-based local storage, responsive design for mobile/desktop.",
+  "requestFramePermissions": []
+}
