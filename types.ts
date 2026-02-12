@@ -1,3 +1,4 @@
+
 export interface Product {
   id: number;
   name: string;
@@ -45,6 +46,7 @@ export interface User {
 
 export interface Order {
   id: number;
+  order_number: string; // NEW: Manual Order Number
   contact_id: number | null;
   sales_rep_id: number | null;
   sales_rep_name?: string; // Joined field from contacts
@@ -62,6 +64,7 @@ export interface OrderItem {
   quantity: number;
   price_at_sale: number;
   product_name?: string;
+  unit?: string; // Add unit for display
 }
 
 export type PurchaseOrderStatus = 'ordered' | 'shipped' | 'received';
@@ -69,6 +72,7 @@ export type PurchaseOrderStatus = 'ordered' | 'shipped' | 'received';
 export interface PurchaseOrder {
   id: number;
   distributor_id: number | null;
+  shipping_ref?: string; // NEW: Container No / Tracking ID
   status: PurchaseOrderStatus;
   expected_arrival_date: string;
   created_at: string;
@@ -81,6 +85,18 @@ export interface PurchaseOrderItem {
   product_id: number;
   quantity: number;
   product_name?: string;
+  unit?: string; // Add unit for display
+}
+
+// New Interface for Audit Trail
+export interface InventoryLog {
+  id: number;
+  product_id: number;
+  type: 'sale' | 'purchase' | 'adjustment' | 'return';
+  quantity: number; // Negative for sale, positive for purchase
+  reference_id: number; // Order ID or PO ID
+  reason?: string;
+  created_at: string;
 }
 
 export interface CartItem extends Product {
@@ -88,6 +104,13 @@ export interface CartItem extends Product {
 }
 
 export type Language = 'en' | 'zh';
+
+export type CurrencyCode = 'AED' | 'USD' | 'CNY';
+
+export interface CurrencyConfig {
+  code: CurrencyCode;
+  rate: number; // Rate relative to Base Currency (AED)
+}
 
 export interface DashboardStats {
   totalSales: number;

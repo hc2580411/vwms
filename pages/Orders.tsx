@@ -1,24 +1,29 @@
+
 import React, { useEffect, useState } from 'react';
 import { dbService } from '../services/db';
-import { Order, OrderItem, Language, Contact, Product, User } from '../types';
+import { Order, OrderItem, Language, Contact, Product, User, CurrencyConfig } from '../types';
 import { translations, formatCurrency, formatDate } from '../i18n';
 import { Card, Modal, Button, Select, Input } from '../components/ui';
 import { ICONS } from '../constants';
 
 interface OrdersProps {
   lang: Language;
-  currentUser?: User; // Keeping for legacy or default if needed
+  currentUser?: User;
+  currency: CurrencyConfig;
 }
 
 interface NewOrderItem {
     product: Product;
     quantity: number;
-    unitPrice: number;
+    unitPrice: number; // Stored as AED
 }
 
-const Orders: React.FC<OrdersProps> = ({ lang, currentUser }) => {
+const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
   const t = translations[lang];
   const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -36,8 +41,24 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser }) => {
     setProducts(dbService.getProducts());
   }, []);
 
+  useEffect(() => {
+    if (!searchTerm) {
+        setFilteredOrders(orders);
+        return;
+    }
+    const lower = searchTerm.toLowerCase();
+    setFilteredOrders(orders.filter(o => 
+        (o.order_number && o.order_number.toLowerCase().includes(lower)) || 
+        o.id.toString().includes(lower) || 
+        (o.sales_rep_name && o.sales_rep_name.toLowerCase().includes(lower)) ||
+        (o.contact_id && o.contact_id.toString().includes(lower))
+    ));
+  }, [searchTerm, orders]);
+
   const loadOrders = () => {
-    setOrders(dbService.getOrders());
+    const all = dbService.getOrders();
+    setOrders(all);
+    setFilteredOrders(all);
   };
 
   const handleViewOrder = (order: Order) => {
@@ -48,17 +69,27 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center border-b border-gray-200 pb-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4">
         <h2 className="text-3xl font-bold text-black uppercase tracking-tight">{t.orders}</h2>
         <Button onClick={() => setIsCreateModalOpen(true)}>{ICONS.Add} {t.create_order}</Button>
       </div>
 
       <Card className="overflow-hidden border border-gray-200">
+        <div className="p-4 border-b border-gray-200 flex items-center gap-3">
+            {ICONS.Search}
+            <input 
+                type="text" 
+                placeholder={t.search_orders} 
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full text-sm outline-none bg-transparent font-mono"
+            />
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-800">
             <thead className="bg-gray-50 text-black uppercase font-bold text-xs border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4">{t.order_id}</th>
+                <th className="px-6 py-4">{t.order_number}</th>
                 <th className="px-6 py-4">{t.date}</th>
                 <th className="px-6 py-4">{t.contact}</th>
                 <th className="px-6 py-4">{t.sales_rep}</th>
@@ -67,21 +98,21 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {orders.map(order => (
+              {filteredOrders.map(order => (
                 <tr 
                   key={order.id} 
                   onClick={() => handleViewOrder(order)} 
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 font-bold">#{order.id}</td>
+                  <td className="px-6 py-4 font-bold text-blue-800 font-mono">{order.order_number || '-'}</td>
                   <td className="px-6 py-4 font-mono text-xs">{formatDate(order.created_at, lang)}</td>
                   <td className="px-6 py-4">{order.contact_id ? `${t.contact_prefix}${order.contact_id}` : t.walk_in}</td>
                   <td className="px-6 py-4 text-xs font-medium text-gray-600">{order.sales_rep_name || '-'}</td>
-                  <td className="px-6 py-4 text-right font-bold">{formatCurrency(order.total_amount, lang)}</td>
-                  <td className="px-6 py-4 text-right text-gray-500 font-mono">{order.deposit ? formatCurrency(order.deposit, lang) : '-'}</td>
+                  <td className="px-6 py-4 text-right font-bold">{formatCurrency(order.total_amount * currency.rate, lang, currency.code)}</td>
+                  <td className="px-6 py-4 text-right text-gray-500 font-mono">{order.deposit ? formatCurrency(order.deposit * currency.rate, lang, currency.code) : '-'}</td>
                 </tr>
               ))}
-              {orders.length === 0 && (
+              {filteredOrders.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-400">{t.no_data}</td>
                 </tr>
@@ -99,6 +130,7 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser }) => {
           contacts={contacts}
           salesReps={salesReps}
           products={products}
+          currency={currency}
           onSave={(orderData: any, items: any) => {
              dbService.createOrder(orderData, items);
              setIsCreateModalOpen(false);
@@ -110,12 +142,15 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser }) => {
       <Modal 
         isOpen={isViewModalOpen} 
         onClose={() => setIsViewModalOpen(false)} 
-        title={`${t.order_id} #${selectedOrder?.id}`}
+        title={`${t.order_number}: ${selectedOrder?.order_number}`}
       >
         {selectedOrder && (
           <div className="space-y-6">
             <div className="flex justify-between text-sm text-gray-500 border-b border-gray-100 pb-4">
-              <span>{formatDate(selectedOrder.created_at, lang)}</span>
+              <div className="flex flex-col">
+                  <span>{formatDate(selectedOrder.created_at, lang)}</span>
+                  <span className="text-xs text-gray-400">System ID: #{selectedOrder.id}</span>
+              </div>
               <div className="text-right">
                   <span className="font-bold text-black uppercase block">{t[selectedOrder.payment_method as keyof typeof t] || selectedOrder.payment_method}</span>
                   <span className="text-xs text-gray-400">{t.sales_rep}: {selectedOrder.sales_rep_name}</span>
@@ -127,9 +162,9 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser }) => {
                 <div key={item.id} className="flex justify-between items-center text-sm">
                   <div>
                     <p className="font-bold text-black">{item.product_name || `${t.product_id_fallback}${item.product_id}`}</p>
-                    <p className="text-xs text-gray-500">{t.qty}: {item.quantity} x {formatCurrency(item.price_at_sale, lang)}</p>
+                    <p className="text-xs text-gray-500">{t.qty}: {item.quantity} {item.unit} x {formatCurrency(item.price_at_sale * currency.rate, lang, currency.code)}</p>
                   </div>
-                  <span className="font-mono">{formatCurrency(item.price_at_sale * item.quantity, lang)}</span>
+                  <span className="font-mono">{formatCurrency((item.price_at_sale * item.quantity) * currency.rate, lang, currency.code)}</span>
                 </div>
               ))}
             </div>
@@ -137,17 +172,17 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser }) => {
             <div className="pt-4 border-t border-gray-100 space-y-2">
                 <div className="flex justify-between items-center font-bold text-lg text-black">
                     <span>{t.total}</span>
-                    <span>{formatCurrency(selectedOrder.total_amount, lang)}</span>
+                    <span>{formatCurrency(selectedOrder.total_amount * currency.rate, lang, currency.code)}</span>
                 </div>
                 {selectedOrder.deposit && selectedOrder.deposit > 0 && (
                     <>
                     <div className="flex justify-between items-center text-sm text-gray-600">
                         <span>{t.deposit}</span>
-                        <span>- {formatCurrency(selectedOrder.deposit, lang)}</span>
+                        <span>- {formatCurrency(selectedOrder.deposit * currency.rate, lang, currency.code)}</span>
                     </div>
                      <div className="flex justify-between items-center font-bold text-red-500 border-t border-dashed border-gray-200 pt-2">
                         <span>{t.balance_due}</span>
-                        <span>{formatCurrency(selectedOrder.total_amount - selectedOrder.deposit, lang)}</span>
+                        <span>{formatCurrency((selectedOrder.total_amount - selectedOrder.deposit) * currency.rate, lang, currency.code)}</span>
                     </div>
                     </>
                 )}
@@ -161,49 +196,59 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser }) => {
 };
 
 // Extracted Modal to handle logic cleaner
-const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, onSave }: any) => {
+const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, onSave, currency }: any) => {
+    const [newOrderNumber, setNewOrderNumber] = useState('');
     const [newOrderContact, setNewOrderContact] = useState<string>('');
     const [selectedSalesRep, setSelectedSalesRep] = useState<string>('');
     const [newOrderItems, setNewOrderItems] = useState<NewOrderItem[]>([]);
     
     // Item Inputs
     const [selectedProductToAdd, setSelectedProductToAdd] = useState<string>('');
-    const [quantityToAdd, setQuantityToAdd] = useState<number>(1);
-    const [priceToAdd, setPriceToAdd] = useState<number>(0);
+    const [quantityToAdd, setQuantityToAdd] = useState<string>('1');
+    const [priceToAdd, setPriceToAdd] = useState<number>(0); // Display Price (Converted)
+    const [selectedProductUnit, setSelectedProductUnit] = useState<string>('');
 
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer'>('cash');
-    const [deposit, setDeposit] = useState<string>('');
+    const [deposit, setDeposit] = useState<string>(''); // Display Deposit (Converted)
 
     // Update default price when product changes
     useEffect(() => {
         if (!selectedProductToAdd) {
             setPriceToAdd(0);
+            setSelectedProductUnit('');
             return;
         }
         const prod = products.find((p: Product) => p.id.toString() === selectedProductToAdd);
         if (prod) {
-            setPriceToAdd(prod.price);
+            // Initial load of price is converted to display currency
+            setPriceToAdd(parseFloat((prod.price * currency.rate).toFixed(2)));
+            setSelectedProductUnit(prod.unit);
         }
-    }, [selectedProductToAdd, products]);
+    }, [selectedProductToAdd, products, currency.rate]);
 
     const handleAddItem = () => {
         if (!selectedProductToAdd) return;
         const prod = products.find((p: Product) => p.id.toString() === selectedProductToAdd);
         if (!prod) return;
+        
+        const qty = parseFloat(quantityToAdd);
+        if (isNaN(qty) || qty <= 0) return;
     
+        // Convert display price back to AED for storage
+        const unitPriceAED = priceToAdd / currency.rate;
+
         setNewOrderItems((prev) => {
-          const existsIndex = prev.findIndex((i) => i.product.id === prod.id && i.unitPrice === priceToAdd);
+          // We use unitPriceAED for storage/logic
+          const existsIndex = prev.findIndex((i) => i.product.id === prod.id && Math.abs(i.unitPrice - unitPriceAED) < 0.01);
           if (existsIndex >= 0) {
-              // Same product same price, merge
               const updated = [...prev];
-              updated[existsIndex].quantity += quantityToAdd;
+              updated[existsIndex].quantity += qty;
               return updated;
           }
-          // Different price or new product
-          return [...prev, { product: prod, quantity: quantityToAdd, unitPrice: priceToAdd }];
+          return [...prev, { product: prod, quantity: qty, unitPrice: unitPriceAED }];
         });
         
-        setQuantityToAdd(1);
+        setQuantityToAdd('1');
         setSelectedProductToAdd('');
         setPriceToAdd(0);
     };
@@ -212,21 +257,32 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
         setNewOrderItems((prev) => prev.filter((_, i) => i !== index));
     };
 
-    const calculateTotal = () => {
+    // Total in AED
+    const calculateTotalAED = () => {
         return newOrderItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
     };
 
-    const total = calculateTotal();
-    const depositAmount = parseFloat(deposit) || 0;
-    const balance = Math.max(0, total - depositAmount);
+    const totalAED = calculateTotalAED();
+    
+    // Convert Deposit input (Display) to AED (Storage)
+    const depositAmountDisplay = parseFloat(deposit) || 0;
+    const depositAmountAED = depositAmountDisplay / currency.rate;
+
+    const balanceAED = Math.max(0, totalAED - depositAmountAED);
 
     const handleCreate = () => {
+        if(!newOrderNumber) {
+            alert(t.enter_order_no);
+            return;
+        }
+
         const orderData = {
             id: 0,
+            order_number: newOrderNumber,
             contact_id: newOrderContact ? parseInt(newOrderContact) : null,
             sales_rep_id: selectedSalesRep ? parseInt(selectedSalesRep) : null,
-            total_amount: total,
-            deposit: depositAmount,
+            total_amount: totalAED, // Store in AED
+            deposit: depositAmountAED, // Store in AED
             payment_method: paymentMethod,
             created_at: new Date().toISOString()
         };
@@ -236,11 +292,12 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
             order_id: 0,
             product_id: i.product.id,
             quantity: i.quantity,
-            price_at_sale: i.unitPrice
+            price_at_sale: i.unitPrice // Store in AED
         })));
         
         setNewOrderItems([]);
         setNewOrderContact('');
+        setNewOrderNumber('');
         setSelectedSalesRep('');
         setDeposit('');
     }
@@ -252,6 +309,14 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
         title={t.new_order}
       >
         <div className="space-y-4">
+          <Input 
+             label={t.enter_order_no}
+             value={newOrderNumber}
+             onChange={e => setNewOrderNumber(e.target.value)}
+             placeholder="INV-2023-001"
+             className="border-b-4 border-blue-100" // Highlight this input
+          />
+
           <div className="grid grid-cols-2 gap-4">
               <Select 
                 label={t.contact}
@@ -283,24 +348,25 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
                   onChange={e => setSelectedProductToAdd(e.target.value)}
                   options={[
                     { label: t.select_product, value: '' },
-                    ...products.filter((p: Product) => p.stock > 0).map((p: Product) => ({ label: `${p.name} ($${p.price})`, value: p.id.toString() }))
+                    ...products.filter((p: Product) => p.stock > 0).map((p: Product) => ({ label: `${p.name} (${formatCurrency(p.price * currency.rate, lang, currency.code)})`, value: p.id.toString() }))
                   ]}
                 />
               </div>
               <div className="flex-1">
                  <Input 
                    type="number"
-                   label={t.unit_price}
+                   label={`${t.unit_price} (${currency.code})`}
                    value={priceToAdd}
                    onChange={e => setPriceToAdd(parseFloat(e.target.value))}
                  />
               </div>
-              <div className="w-16">
+              <div className="w-20">
                 <Input 
                   type="number" 
-                  label={t.qty}
+                  step="0.1"
+                  label={`${t.qty} ${selectedProductUnit ? `(${selectedProductUnit})` : ''}`}
                   value={quantityToAdd} 
-                  onChange={e => setQuantityToAdd(parseInt(e.target.value))} 
+                  onChange={e => setQuantityToAdd(e.target.value)} 
                 />
               </div>
               <Button onClick={handleAddItem} disabled={!selectedProductToAdd || priceToAdd < 0}>{ICONS.Add}</Button>
@@ -312,10 +378,11 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
                <div key={idx} className="flex justify-between items-center text-sm">
                  <div>
                     <span className="font-medium">{item.product.name}</span>
-                    <span className="text-xs text-gray-500 ml-2">@ {formatCurrency(item.unitPrice, lang)}</span>
+                    {/* Display Unit Price in Selected Currency */}
+                    <span className="text-xs text-gray-500 ml-2">@ {formatCurrency(item.unitPrice * currency.rate, lang, currency.code)}</span>
                  </div>
                  <div className="flex items-center gap-2">
-                   <span className="font-mono">{item.quantity} x {formatCurrency(item.unitPrice * item.quantity, lang)}</span>
+                   <span className="font-mono">{item.quantity} {item.product.unit} x {formatCurrency((item.unitPrice * item.quantity) * currency.rate, lang, currency.code)}</span>
                    <button onClick={() => handleRemoveItem(idx)} className="text-gray-400 hover:text-black">
                      {ICONS.Delete}
                    </button>
@@ -327,12 +394,12 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
 
           <div className="flex justify-between items-center font-bold text-lg">
              <span>{t.total}</span>
-             <span>{formatCurrency(total, lang)}</span>
+             <span>{formatCurrency(totalAED * currency.rate, lang, currency.code)}</span>
           </div>
 
            <div className="grid grid-cols-2 gap-4 items-center bg-gray-50 p-3 border border-gray-100">
                <Input 
-                  label={`${t.deposit} (${t.optional})`}
+                  label={`${t.deposit} (${t.optional}) [${currency.code}]`}
                   type="number"
                   value={deposit}
                   onChange={e => setDeposit(e.target.value)}
@@ -340,7 +407,7 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
                />
                <div className="text-right">
                    <span className="text-xs text-gray-500 uppercase font-bold">{t.balance_due}</span>
-                   <p className="text-xl font-bold text-red-500">{formatCurrency(balance, lang)}</p>
+                   <p className="text-xl font-bold text-red-500">{formatCurrency(balanceAED * currency.rate, lang, currency.code)}</p>
                </div>
            </div>
 

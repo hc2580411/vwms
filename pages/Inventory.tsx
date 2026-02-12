@@ -1,15 +1,17 @@
+
 import React, { useEffect, useState } from 'react';
 import { dbService } from '../services/db';
-import { Product, Language, Category, Unit } from '../types';
+import { Product, Language, Category, Unit, CurrencyConfig } from '../types';
 import { translations, formatCurrency } from '../i18n';
-import { Card, Button, Input, Modal, Select } from '../components/ui';
+import { Card, Button, Input, Modal, Select, ConfirmationModal } from '../components/ui';
 import { ICONS } from '../constants';
 
 interface InventoryProps {
   lang: Language;
+  currency: CurrencyConfig;
 }
 
-const Inventory: React.FC<InventoryProps> = ({ lang }) => {
+const Inventory: React.FC<InventoryProps> = ({ lang, currency }) => {
   const t = translations[lang];
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -27,10 +29,23 @@ const Inventory: React.FC<InventoryProps> = ({ lang }) => {
   const [formData, setFormData] = useState<Partial<Product>>({
     name: '', price: 0, cost: 0, stock: 0, category: '', unit: ''
   });
+  // Local state for editing prices in displayed currency
+  const [displayPrice, setDisplayPrice] = useState<number>(0);
+  const [displayCost, setDisplayCost] = useState<number>(0);
 
   // Management Form State
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newUnitName, setNewUnitName] = useState('');
+
+   // Confirmation Modal State
+   const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    action: () => void;
+    isDanger: boolean;
+  }>({ isOpen: false, title: '', message: '', action: () => {}, isDanger: false });
+
 
   const loadData = () => {
     setProducts(dbService.getProducts());
@@ -46,20 +61,30 @@ const Inventory: React.FC<InventoryProps> = ({ lang }) => {
     if (product) {
       setEditingProduct(product);
       setFormData(product);
+      // Convert to display currency for input
+      setDisplayPrice(parseFloat((product.price * currency.rate).toFixed(2)));
+      setDisplayCost(parseFloat((product.cost * currency.rate).toFixed(2)));
     } else {
       setEditingProduct(null);
       // Default to first category/unit if available
       const defaultCat = categories.length > 0 ? categories[0].name : '';
       const defaultUnit = units.length > 0 ? units[0].name : '';
       setFormData({ name: '', price: 0, cost: 0, stock: 0, category: defaultCat, unit: defaultUnit });
+      setDisplayPrice(0);
+      setDisplayCost(0);
     }
     setIsModalOpen(true);
   };
 
   const handleSubmit = () => {
-    if (!formData.name || !formData.price) return;
+    if (!formData.name) return;
     
-    const p = formData as Product;
+    // Convert back to AED for storage
+    const p = {
+        ...formData,
+        price: displayPrice / currency.rate,
+        cost: displayCost / currency.rate
+    } as Product;
     
     if (editingProduct) {
       dbService.updateProduct({ ...editingProduct, ...p });
@@ -71,11 +96,17 @@ const Inventory: React.FC<InventoryProps> = ({ lang }) => {
     loadData();
   };
 
-  const handleDelete = (id: number) => {
-    if (window.confirm(t.reset_db_confirm)) {
-      dbService.deleteProduct(id);
-      loadData();
-    }
+  const confirmDeleteProduct = (id: number) => {
+      setConfirmState({
+          isOpen: true,
+          title: t.delete,
+          message: 'Are you sure you want to delete this product?',
+          isDanger: true,
+          action: () => {
+            dbService.deleteProduct(id);
+            loadData();
+          }
+      });
   };
 
   // Category Management Handlers
@@ -87,11 +118,17 @@ const Inventory: React.FC<InventoryProps> = ({ lang }) => {
     }
   };
 
-  const handleDeleteCategory = (id: number) => {
-    if (window.confirm(t.reset_db_confirm)) {
-      dbService.deleteCategory(id);
-      loadData();
-    }
+  const confirmDeleteCategory = (id: number) => {
+    setConfirmState({
+        isOpen: true,
+        title: t.delete,
+        message: 'Are you sure you want to delete this category?',
+        isDanger: true,
+        action: () => {
+            dbService.deleteCategory(id);
+            loadData();
+        }
+    });
   };
 
   // Unit Management Handlers
@@ -103,11 +140,17 @@ const Inventory: React.FC<InventoryProps> = ({ lang }) => {
     }
   };
 
-  const handleDeleteUnit = (id: number) => {
-    if (window.confirm(t.reset_db_confirm)) {
-      dbService.deleteUnit(id);
-      loadData();
-    }
+  const confirmDeleteUnit = (id: number) => {
+    setConfirmState({
+        isOpen: true,
+        title: t.delete,
+        message: 'Are you sure you want to delete this unit?',
+        isDanger: true,
+        action: () => {
+            dbService.deleteUnit(id);
+            loadData();
+        }
+    });
   };
 
   const filteredProducts = products.filter(p => 
@@ -158,7 +201,7 @@ const Inventory: React.FC<InventoryProps> = ({ lang }) => {
               {filteredProducts.map(p => (
                 <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 font-bold">{p.name}</td>
-                  <td className="px-6 py-4 text-right">{formatCurrency(p.price, lang)}</td>
+                  <td className="px-6 py-4 text-right">{formatCurrency(p.price * currency.rate, lang, currency.code)}</td>
                   <td className={`px-6 py-4 text-right`}>
                     <span className={`font-bold ${p.stock < 10 ? 'text-red-500' : ''}`}>{p.stock}</span>
                     {p.incoming ? <span className="text-gray-400 ml-1 text-xs">(+{p.incoming})</span> : null}
@@ -169,7 +212,7 @@ const Inventory: React.FC<InventoryProps> = ({ lang }) => {
                     <button onClick={() => handleOpenModal(p)} className="p-2 hover:bg-gray-100">
                       {ICONS.Edit}
                     </button>
-                    <button onClick={() => handleDelete(p.id)} className="p-2 hover:bg-gray-100">
+                    <button onClick={() => confirmDeleteProduct(p.id)} className="p-2 hover:bg-gray-100">
                       {ICONS.Delete}
                     </button>
                   </td>
@@ -221,16 +264,16 @@ const Inventory: React.FC<InventoryProps> = ({ lang }) => {
 
           <div className="grid grid-cols-3 gap-4">
             <Input 
-              label={t.price} 
+              label={`${t.price} (${currency.code})`} 
               type="number"
-              value={formData.price || 0} 
-              onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})} 
+              value={displayPrice} 
+              onChange={e => setDisplayPrice(parseFloat(e.target.value))} 
             />
             <Input 
-              label={t.cost} 
+              label={`${t.cost} (${currency.code})`} 
               type="number"
-              value={formData.cost || 0} 
-              onChange={e => setFormData({...formData, cost: parseFloat(e.target.value)})} 
+              value={displayCost} 
+              onChange={e => setDisplayCost(parseFloat(e.target.value))} 
             />
             <Input 
               label={t.stock} 
@@ -269,7 +312,7 @@ const Inventory: React.FC<InventoryProps> = ({ lang }) => {
                   {categories.map(cat => (
                       <div key={cat.id} className="flex justify-between items-center p-3 border-b border-gray-100 last:border-0 hover:bg-gray-50">
                           <span className="font-medium text-sm">{cat.name}</span>
-                          <button onClick={() => handleDeleteCategory(cat.id)} className="text-gray-400 hover:text-red-500">
+                          <button onClick={() => confirmDeleteCategory(cat.id)} className="text-gray-400 hover:text-red-500">
                               {ICONS.Delete}
                           </button>
                       </div>
@@ -304,7 +347,7 @@ const Inventory: React.FC<InventoryProps> = ({ lang }) => {
                   {units.map(u => (
                       <div key={u.id} className="flex justify-between items-center p-3 border-b border-gray-100 last:border-0 hover:bg-gray-50">
                           <span className="font-medium text-sm">{u.name}</span>
-                          <button onClick={() => handleDeleteUnit(u.id)} className="text-gray-400 hover:text-red-500">
+                          <button onClick={() => confirmDeleteUnit(u.id)} className="text-gray-400 hover:text-red-500">
                               {ICONS.Delete}
                           </button>
                       </div>
@@ -315,6 +358,18 @@ const Inventory: React.FC<InventoryProps> = ({ lang }) => {
               </div>
           </div>
       </Modal>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal 
+          isOpen={confirmState.isOpen}
+          onClose={() => setConfirmState({...confirmState, isOpen: false})}
+          onConfirm={confirmState.action}
+          title={confirmState.title}
+          message={confirmState.message}
+          isDanger={confirmState.isDanger}
+          confirmText={t.delete}
+          cancelText={t.cancel}
+      />
     </div>
   );
 };

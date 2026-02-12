@@ -73,6 +73,7 @@ const POS: React.FC<POSProps> = ({ lang, user }) => {
     try {
       const orderData: Order = {
         id: 0, // auto
+        order_number: `POS-${Date.now()}`, // Auto-generated order number for POS
         contact_id: selectedCustomer ? parseInt(selectedCustomer) : null,
         sales_rep_id: user?.id || null,
         total_amount: cartTotal,

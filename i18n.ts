@@ -1,4 +1,5 @@
-import { Language } from './types';
+
+import { Language, CurrencyCode } from './types';
 
 export const translations = {
   en: {
@@ -20,6 +21,8 @@ export const translations = {
     save: 'Save',
     cancel: 'Cancel',
     search: 'Search...',
+    search_orders: 'Search Order No, Customer...',
+    search_pos: 'Search Shipping Ref, Distributor...',
     name: 'Name',
     price: 'Price',
     cost: 'Cost',
@@ -37,7 +40,8 @@ export const translations = {
     transfer: 'Transfer',
     confirm_payment: 'Confirm Payment',
     order_success: 'Order successful',
-    order_id: 'Order ID',
+    order_id: 'System ID',
+    order_number: 'Order No.', 
     date: 'Date',
     items: 'Items',
     contact: 'Contact',
@@ -45,8 +49,10 @@ export const translations = {
     language: 'Language',
     reset_db: 'Reset Database',
     reset_db_confirm: 'Are you sure? This will delete all data.',
-    export_db: 'Export Data',
-    import_db: 'Import Data',
+    export_db: 'Backup Data (JSON)',
+    import_db: 'Restore Data (JSON)',
+    import_success: 'Data restored successfully!',
+    import_error: 'Invalid file format.',
     no_data: 'No data available',
     loading: 'Loading system...',
     sales_trend: 'Sales Trend (7 Days)',
@@ -70,7 +76,7 @@ export const translations = {
     product_id_fallback: 'Product #',
     contact_prefix: 'Contact #',
     data_management: 'Data Management',
-    data_management_desc: 'Manage local database. Resetting clears all data.',
+    data_management_desc: 'Backup your data regularly. Resetting clears all local data.',
     type: 'Type',
     customer: 'Customer',
     customers: 'Customers',
@@ -105,7 +111,7 @@ export const translations = {
     receive_goods: 'Receive Goods',
     po_received_msg: 'Goods received. Stock updated.',
     distributor_required: 'Distributor Required',
-    shipping_placeholder: 'Container No. / Tracking ID',
+    shipping_placeholder: 'Tracking / Container No.',
     // Categories & Units
     manage_categories: 'Categories',
     manage_units: 'Units',
@@ -124,6 +130,25 @@ export const translations = {
     deposit: 'Deposit',
     balance_due: 'Balance Due',
     unit_price: 'Unit Price',
+    enter_order_no: 'Enter Order Number',
+    enter_tracking_no: 'Enter Tracking/Container No',
+    // Settings Revamp
+    user_management: 'User Management',
+    add_user: 'Add User',
+    system_config: 'System Configuration',
+    low_stock_threshold: 'Low Stock Alert Threshold',
+    backup_restore: 'Backup & Restore',
+    download_backup: 'Download Backup',
+    restore_backup: 'Restore from File',
+    users: 'Users',
+    delete_user_confirm: 'Delete this user?',
+    tax_rate: 'Tax Rate (%)',
+    currency_settings: 'Currency Settings',
+    display_currency: 'Display Currency',
+    exchange_rate: 'Exchange Rate',
+    get_live_rate: 'Get Today\'s Rate',
+    base_currency_note: 'Base currency is AED. Changing display currency only affects what you see, not the stored data.',
+    settings_saved: 'Settings Saved',
   },
   zh: {
     app_name: 'Veik WMS',
@@ -132,7 +157,7 @@ export const translations = {
     inventory: '库存',
     orders: '销售订单',
     purchase_orders: '进货单',
-    settings: '设置',
+    settings: '系统设置',
     relationships: '关系管理',
     total_sales: '总销售额',
     total_orders: '总订单数',
@@ -144,6 +169,8 @@ export const translations = {
     save: '保存',
     cancel: '取消',
     search: '搜索...',
+    search_orders: '搜索单号、客户...',
+    search_pos: '搜索物流单号、经销商...',
     name: '名称',
     price: '售价',
     cost: '成本',
@@ -161,16 +188,19 @@ export const translations = {
     transfer: '转账',
     confirm_payment: '确认支付',
     order_success: '订单创建成功',
-    order_id: '单号',
+    order_id: '系统ID',
+    order_number: '销售单号',
     date: '日期',
     items: '商品',
     contact: '联系人',
     optional: '选填',
     language: '语言',
-    reset_db: '重置数据库',
-    reset_db_confirm: '确定吗？这将清空所有数据。',
-    export_db: '导出数据',
-    import_db: '导入数据',
+    reset_db: '清空数据库',
+    reset_db_confirm: '确定吗？这将清空所有数据且无法恢复。',
+    export_db: '备份数据 (JSON)',
+    import_db: '恢复数据 (JSON)',
+    import_success: '数据恢复成功！',
+    import_error: '文件格式错误。',
     no_data: '暂无数据',
     loading: '系统加载中...',
     sales_trend: '销售趋势 (7天)',
@@ -194,7 +224,7 @@ export const translations = {
     product_id_fallback: '商品 #',
     contact_prefix: '联系人 #',
     data_management: '数据管理',
-    data_management_desc: '管理本地数据库。重置将清空所有数据。',
+    data_management_desc: '建议定期备份数据。清空数据库将删除所有本地记录。',
     type: '类型',
     customer: '客户',
     customers: '客户列表',
@@ -229,7 +259,7 @@ export const translations = {
     receive_goods: '确认收货入库',
     po_received_msg: '已收货，库存已更新。',
     distributor_required: '必须选择经销商',
-    shipping_placeholder: '集装箱号 / 快递单号',
+    shipping_placeholder: '货运/物流单号',
     // Categories & Units
     manage_categories: '分类管理',
     manage_units: '单位管理',
@@ -248,19 +278,45 @@ export const translations = {
     deposit: '定金',
     balance_due: '尾款 / 余额',
     unit_price: '销售单价',
+    enter_order_no: '请输入销售单号 (必填)',
+    enter_tracking_no: '请输入物流/货柜单号 (必填)',
+    // Settings Revamp
+    user_management: '用户权限管理',
+    add_user: '添加用户',
+    system_config: '业务参数配置',
+    low_stock_threshold: '低库存预警阈值',
+    backup_restore: '数据备份与恢复',
+    download_backup: '下载备份文件',
+    restore_backup: '从文件恢复数据',
+    users: '账号列表',
+    delete_user_confirm: '确定删除该用户？',
+    tax_rate: '默认税率 (%)',
+    currency_settings: '货币设置',
+    display_currency: '显示货币',
+    exchange_rate: '汇率 (相对于 AED)',
+    get_live_rate: '获取今日汇率',
+    base_currency_note: '系统基准货币为 AED (迪拉姆)。切换显示货币仅影响展示数值，不改变数据库存储的原始金额。',
+    settings_saved: '设置已保存',
   }
 };
 
-export const formatCurrency = (amount: number, lang: Language) => {
+export const formatCurrency = (amount: number, lang: Language, currencyCode: CurrencyCode = 'AED') => {
+  const currencyMap: Record<string, string> = {
+    'AED': 'AED',
+    'USD': 'USD',
+    'CNY': 'CNY'
+  };
+
+  const currencyStr = currencyMap[currencyCode] || 'AED';
+
   return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'zh-CN', {
     style: 'currency',
-    currency: lang === 'en' ? 'USD' : 'CNY',
+    currency: currencyStr,
   }).format(amount);
 };
 
 export const formatDate = (dateString: string, lang: Language) => {
   if (!dateString) return '-';
-  // Check if it's a date-only string (YYYY-MM-DD)
   if (dateString.length === 10) return dateString;
   return new Date(dateString).toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN');
 };

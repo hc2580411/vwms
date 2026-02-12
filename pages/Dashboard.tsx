@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { dbService } from '../services/db';
-import { DashboardStats, Language } from '../types';
+import { DashboardStats, Language, CurrencyConfig } from '../types';
 import { translations, formatCurrency } from '../i18n';
 import { Card } from '../components/ui';
 import { ICONS } from '../constants';
@@ -8,9 +9,10 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 interface DashboardProps {
   lang: Language;
+  currency: CurrencyConfig;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ lang }) => {
+const Dashboard: React.FC<DashboardProps> = ({ lang, currency }) => {
   const t = translations[lang];
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [salesData, setSalesData] = useState<any[]>([]);
@@ -29,6 +31,13 @@ const Dashboard: React.FC<DashboardProps> = ({ lang }) => {
 
   if (!stats) return <div className="p-8 text-center text-gray-500 font-mono">{t.loading}</div>;
 
+  // Convert for Display
+  const displayTotalSales = stats.totalSales * currency.rate;
+  const displaySalesData = salesData.map(d => ({
+      ...d,
+      amount: d.amount * currency.rate
+  }));
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4">
@@ -42,7 +51,7 @@ const Dashboard: React.FC<DashboardProps> = ({ lang }) => {
               <span className="uppercase text-xs font-bold tracking-wider">{t.total_sales}</span>
               {ICONS.Orders}
             </div>
-            <p className="text-3xl font-bold text-black">{formatCurrency(stats.totalSales, lang)}</p>
+            <p className="text-3xl font-bold text-black">{formatCurrency(displayTotalSales, lang, currency.code)}</p>
           </div>
         </Card>
 
@@ -73,7 +82,7 @@ const Dashboard: React.FC<DashboardProps> = ({ lang }) => {
             <h3 className="text-sm font-bold text-gray-500 uppercase mb-6 tracking-wider">{t.sales_trend}</h3>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={salesData}>
+                <AreaChart data={displaySalesData}>
                   <defs>
                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#000000" stopOpacity={0.1}/>
@@ -84,7 +93,7 @@ const Dashboard: React.FC<DashboardProps> = ({ lang }) => {
                   <XAxis dataKey="date" tick={{fontSize: 10, fill: '#6b7280'}} axisLine={false} tickLine={false} />
                   <YAxis tick={{fontSize: 10, fill: '#6b7280'}} axisLine={false} tickLine={false} />
                   <Tooltip 
-                    formatter={(value: number) => formatCurrency(value, lang)} 
+                    formatter={(value: number) => formatCurrency(value, lang, currency.code)} 
                     contentStyle={{backgroundColor: '#fff', border: '1px solid #000', borderRadius: '0px'}}
                   />
                   <Area type="monotone" dataKey="amount" stroke="#000000" strokeWidth={2} fillOpacity={1} fill="url(#colorSales)" />
@@ -108,7 +117,7 @@ const Dashboard: React.FC<DashboardProps> = ({ lang }) => {
                     <p className="text-xs text-gray-400 font-mono">{new Date(order.created_at).toLocaleTimeString()}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-black">{formatCurrency(order.total_amount, lang)}</p>
+                    <p className="font-bold text-black">{formatCurrency(order.total_amount * currency.rate, lang, currency.code)}</p>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wide">{order.payment_method}</p>
                   </div>
                 </div>

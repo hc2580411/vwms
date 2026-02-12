@@ -27,18 +27,25 @@ const Layout: React.FC<LayoutProps> = ({ children, lang, setLang, user, onLogout
     <div className="flex h-screen bg-white overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-black text-white border-r border-gray-800">
-        <div className="p-6 border-b border-gray-800 flex justify-center">
-          {/* LOGO REPLACEMENT */}
-          <div className="flex flex-col gap-2 items-center">
-            <div className="bg-white rounded p-1">
-              <img src="./logo.jpg" alt="VWMS Logo" className="h-16 w-auto object-contain" onError={(e) => {
-                e.currentTarget.style.display='none';
-                e.currentTarget.parentElement!.innerText = 'VWMS'; // Fallback
-              }}/>
-            </div>
-            <div className="text-[10px] text-gray-500 uppercase tracking-widest leading-tight text-center">
-              {t.full_app_name}
-            </div>
+        <div className="p-6 border-b border-gray-800 flex flex-col items-center">
+          {/* LOGO REPLACEMENT - Improved CSS for scaling */}
+          <div className="bg-white rounded p-3 w-full flex justify-center items-center min-h-[80px] mb-3">
+            <img 
+              src="./logo.jpg" 
+              alt="VWMS Logo" 
+              className="w-auto h-auto max-w-full max-h-24 object-contain"
+              onError={(e) => {
+                const parent = e.currentTarget.parentElement;
+                if (parent) {
+                  e.currentTarget.style.display='none';
+                  parent.innerText = 'VWMS'; // Fallback text
+                  parent.classList.add('text-black', 'font-black', 'text-2xl');
+                }
+              }}
+            />
+          </div>
+          <div className="text-[10px] text-gray-500 uppercase tracking-widest leading-tight text-center">
+            {t.full_app_name}
           </div>
         </div>
         
@@ -101,7 +108,9 @@ const Layout: React.FC<LayoutProps> = ({ children, lang, setLang, user, onLogout
         {/* Mobile Header */}
         <header className="md:hidden bg-black text-white p-4 flex items-center justify-between z-20">
           <div className="flex items-center gap-2">
-             <img src="./logo.jpg" alt="VWMS" className="h-8 w-auto bg-white rounded" />
+             <div className="h-8 w-auto bg-white rounded px-2 flex items-center">
+                <img src="./logo.jpg" alt="VWMS" className="max-h-6 w-auto object-contain" />
+             </div>
              <span className="font-black tracking-tighter">VWMS</span>
           </div>
           <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-1">

@@ -1,23 +1,27 @@
+
 import React from 'react';
 
-export const Card = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
+export interface CardProps {
+  children?: React.ReactNode;
+  className?: string;
+}
+
+export const Card: React.FC<CardProps> = ({ children, className = '' }) => (
   <div className={`bg-white border border-gray-200 rounded-none shadow-none ${className}`}>
     {children}
   </div>
 );
 
-export const Button = ({ 
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+  children?: React.ReactNode;
+}
+
+export const Button: React.FC<ButtonProps> = ({ 
   children, 
   variant = 'primary', 
-  onClick, 
   className = '',
-  disabled = false
-}: { 
-  children: React.ReactNode, 
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost', 
-  onClick?: () => void,
-  className?: string,
-  disabled?: boolean
+  ...props
 }) => {
   const baseStyle = "px-4 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed border";
   const variants = {
@@ -28,67 +32,68 @@ export const Button = ({
   };
 
   return (
-    <button onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`} disabled={disabled}>
+    <button className={`${baseStyle} ${variants[variant]} ${className}`} {...props}>
       {children}
     </button>
   );
 };
 
-export const Input = ({ 
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+}
+
+export const Input: React.FC<InputProps> = ({ 
   label, 
-  value, 
-  onChange, 
-  type = "text", 
-  placeholder = "",
-  className = ""
-}: { 
-  label?: string, 
-  value: string | number, 
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, 
-  type?: string,
-  placeholder?: string,
-  className?: string
+  className = "",
+  ...props
 }) => (
   <div className={`flex flex-col gap-1 ${className}`}>
     {label && <label className="text-xs font-bold uppercase tracking-wider text-gray-500">{label}</label>}
     <input 
-      type={type} 
-      value={value} 
-      onChange={onChange} 
-      placeholder={placeholder}
       className="border border-gray-300 px-3 py-2 text-sm focus:border-black focus:ring-0 outline-none transition-colors rounded-none"
+      {...props}
     />
   </div>
 );
 
-export const Select = ({
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  options: { label: string; value: string }[];
+}
+
+export const Select: React.FC<SelectProps> = ({
   label,
   value,
   onChange,
   options,
-}: {
-  label?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  options: { label: string; value: string }[];
+  className = '',
+  ...props
 }) => (
   <div className="flex flex-col gap-1">
     {label && <label className="text-xs font-bold uppercase tracking-wider text-gray-500">{label}</label>}
     <select
       value={value}
       onChange={onChange}
-      className="border border-gray-300 px-3 py-2 text-sm bg-white focus:border-black focus:ring-0 outline-none rounded-none"
+      className={`border border-gray-300 px-3 py-2 text-sm bg-white focus:border-black focus:ring-0 outline-none rounded-none ${className}`}
+      {...props}
     >
       {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
     </select>
   </div>
 );
 
-export const Modal = ({ isOpen, onClose, title, children }: { isOpen: boolean, onClose: () => void, title: string, children: React.ReactNode }) => {
+export interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children?: React.ReactNode;
+}
+
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm p-4">
-      <div className="bg-white border border-black shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white border border-black shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <h3 className="font-bold text-lg text-black uppercase tracking-tight">{title}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-black transition-colors">
@@ -97,6 +102,54 @@ export const Modal = ({ isOpen, onClose, title, children }: { isOpen: boolean, o
         </div>
         <div className="p-6 max-h-[80vh] overflow-y-auto">
           {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export interface ConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  isDanger?: boolean;
+}
+
+export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  isDanger = false
+}) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-md overflow-hidden p-6 animate-in zoom-in-95 duration-200">
+        <h3 className={`text-xl font-black uppercase tracking-tight mb-2 ${isDanger ? 'text-red-600' : 'text-black'}`}>
+          {title}
+        </h3>
+        <p className="text-gray-600 mb-8 font-medium">
+          {message}
+        </p>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={onClose}>
+            {cancelText}
+          </Button>
+          <Button 
+            variant={isDanger ? 'danger' : 'primary'} 
+            onClick={() => { onConfirm(); onClose(); }}
+            className={isDanger ? 'bg-red-600 text-white border-red-600 hover:bg-red-700' : ''}
+          >
+            {confirmText}
+          </Button>
         </div>
       </div>
     </div>

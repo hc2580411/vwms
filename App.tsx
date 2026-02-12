@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
@@ -9,21 +10,38 @@ import Relationships from './pages/Relationships';
 import PurchaseOrders from './pages/PurchaseOrders';
 import Login from './components/Login';
 import { dbService } from './services/db';
-import { Language, User, Order, OrderItem } from './types';
+import { Language, User, Order, OrderItem, CurrencyConfig, CurrencyCode } from './types';
 import { translations } from './i18n';
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('zh');
   const [dbReady, setDbReady] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  
+  // Currency State
+  const [currencyConfig, setCurrencyConfig] = useState<CurrencyConfig>({ code: 'AED', rate: 1 });
 
   useEffect(() => {
     // Init DB
     dbService.init().then(() => {
       setDbReady(true);
-      // Optional: Check local storage for persistent login if needed
+      loadCurrencySettings();
     });
   }, []);
+
+  const loadCurrencySettings = () => {
+      const s = dbService.getSettings();
+      setCurrencyConfig({
+          code: (s['display_currency'] as CurrencyCode) || 'AED',
+          rate: parseFloat(s['exchange_rate'] || '1')
+      });
+  };
+
+  const updateCurrencySettings = (newConfig: CurrencyConfig) => {
+      setCurrencyConfig(newConfig);
+      dbService.saveSetting('display_currency', newConfig.code);
+      dbService.saveSetting('exchange_rate', newConfig.rate.toString());
+  };
 
   const handleLogout = () => {
     if (user) {
@@ -42,27 +60,22 @@ const App: React.FC = () => {
   }
 
   if (!user) {
-    return <Login onLogin={setUser} lang={lang} />;
+    return <Login onLogin={setUser} lang={lang} setLang={setLang} />;
   }
-
-  // Wrapper for Orders to inject User
-  const OrdersWithUser = () => {
-      return <Orders lang={lang} currentUser={user} />;
-  };
 
   return (
     <Router>
       <Layout lang={lang} setLang={setLang} user={user} onLogout={handleLogout}>
         <Routes>
-          <Route path="/" element={<Dashboard lang={lang} />} />
-          <Route path="/orders" element={<OrdersPageWrapper lang={lang} user={user} />} />
+          <Route path="/" element={<Dashboard lang={lang} currency={currencyConfig} />} />
+          <Route path="/orders" element={<Orders lang={lang} currentUser={user} currency={currencyConfig} />} />
           
           {/* Admin Only Routes */}
           {user.role === 'admin' ? (
             <>
-              <Route path="/inventory" element={<Inventory lang={lang} />} />
+              <Route path="/inventory" element={<Inventory lang={lang} currency={currencyConfig} />} />
               <Route path="/relationships" element={<Relationships lang={lang} />} />
-              <Route path="/settings" element={<Settings lang={lang} setLang={setLang} />} />
+              <Route path="/settings" element={<Settings lang={lang} setLang={setLang} currency={currencyConfig} onUpdateCurrency={updateCurrencySettings} />} />
               <Route path="/purchase-orders" element={<PurchaseOrders lang={lang} />} />
             </>
           ) : (
@@ -74,20 +87,5 @@ const App: React.FC = () => {
     </Router>
   );
 };
-
-// Create a wrapper to handle the prop passing without breaking Router types if necessary
-// And to handle the injection of the user ID into the Order creation process
-const OrdersPageWrapper = ({ lang, user }: { lang: Language, user: User }) => {
-    // We need to patch the DB service create order or pass the user.
-    // Since Orders.tsx calls `dbService.createOrder`, we need to make sure `Orders.tsx` passes the ID.
-    // I will update Orders.tsx (in the XML above) to actually use a prop `currentUser`.
-    // I will verify Orders.tsx content in the previous block... 
-    // I updated Orders.tsx but I didn't add the prop interface. 
-    // I will fix Orders.tsx content now.
-    
-    // Actually, I can just patch the prototype here? No.
-    // I will update Orders.tsx in the XML to accept currentUser.
-    return <Orders lang={lang} currentUser={user} />;
-}
 
 export default App;

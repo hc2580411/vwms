@@ -11,7 +11,10 @@ interface PurchaseOrdersProps {
 
 const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
   const t = translations[lang];
-  const [pos, setPOs] = useState<PurchaseOrder[]>([]);
+  const [pos, setPOs] = useState<(PurchaseOrder & {distributor_name?: string})[]>([]);
+  const [filteredPOs, setFilteredPOs] = useState<(PurchaseOrder & {distributor_name?: string})[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [poItems, setPOItems] = useState<PurchaseOrderItem[]>([]);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -24,17 +27,46 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
 
   // Create Form State
   const [newPODistributor, setNewPODistributor] = useState<string>('');
+  const [newPOShippingRef, setNewPOShippingRef] = useState<string>('');
   const [newPOItems, setNewPOItems] = useState<{product: Product, quantity: number}[]>([]);
   const [selectedProductToAdd, setSelectedProductToAdd] = useState<string>('');
-  const [quantityToAdd, setQuantityToAdd] = useState<number>(1);
+  const [quantityToAdd, setQuantityToAdd] = useState<number | string>(''); // Allow string for easy editing
   const [expectedDate, setExpectedDate] = useState('');
+  
+  // Helper for Unit Display
+  const [selectedProductUnit, setSelectedProductUnit] = useState<string>('');
 
   useEffect(() => {
     loadData();
   }, []);
 
+  useEffect(() => {
+      if (!searchTerm) {
+          setFilteredPOs(pos);
+          return;
+      }
+      const lower = searchTerm.toLowerCase();
+      setFilteredPOs(pos.filter(p => 
+          p.id.toString().includes(lower) ||
+          (p.shipping_ref && p.shipping_ref.toLowerCase().includes(lower)) ||
+          (p.distributor_name && p.distributor_name.toLowerCase().includes(lower))
+      ));
+  }, [searchTerm, pos]);
+
+  // Watch for product selection to update unit label
+  useEffect(() => {
+    if (selectedProductToAdd) {
+        const p = products.find(x => x.id.toString() === selectedProductToAdd);
+        setSelectedProductUnit(p ? p.unit : '');
+    } else {
+        setSelectedProductUnit('');
+    }
+  }, [selectedProductToAdd, products]);
+
   const loadData = () => {
-    setPOs(dbService.getPurchaseOrders());
+    const allPos = dbService.getPurchaseOrders();
+    setPOs(allPos);
+    setFilteredPOs(allPos);
     setDistributors(dbService.getContacts().filter(c => c.type === 'distributor'));
     setProducts(dbService.getProducts());
   };
@@ -49,6 +81,7 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
     e.stopPropagation();
     setSelectedPO(po);
     setExpectedDate(po.expected_arrival_date || '');
+    setNewPOShippingRef(po.shipping_ref || ''); // Use this state for edit too
     setIsEditModalOpen(true);
   };
 
@@ -58,14 +91,17 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
     const prod = products.find(p => p.id.toString() === selectedProductToAdd);
     if (!prod) return;
 
+    const qty = parseFloat(quantityToAdd.toString());
+    if (isNaN(qty) || qty <= 0) return;
+
     setNewPOItems(prev => {
       const exists = prev.find(i => i.product.id === prod.id);
       if (exists) {
-        return prev.map(i => i.product.id === prod.id ? { ...i, quantity: i.quantity + quantityToAdd } : i);
+        return prev.map(i => i.product.id === prod.id ? { ...i, quantity: i.quantity + qty } : i);
       }
-      return [...prev, { product: prod, quantity: quantityToAdd }];
+      return [...prev, { product: prod, quantity: qty }];
     });
-    setQuantityToAdd(1);
+    setQuantityToAdd('');
     setSelectedProductToAdd('');
   };
 
@@ -74,12 +110,17 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
   };
 
   const handleCreatePO = () => {
-    if (newPOItems.length === 0 || !newPODistributor) return;
+    if (newPOItems.length === 0) return;
+    if (!newPOShippingRef) {
+        alert(t.enter_tracking_no);
+        return;
+    }
 
     try {
       const poData: PurchaseOrder = {
         id: 0,
-        distributor_id: parseInt(newPODistributor),
+        distributor_id: newPODistributor ? parseInt(newPODistributor) : null,
+        shipping_ref: newPOShippingRef,
         status: 'ordered',
         expected_arrival_date: expectedDate,
         created_at: new Date().toISOString()
@@ -96,6 +137,7 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
       setIsCreateModalOpen(false);
       setNewPOItems([]);
       setNewPODistributor('');
+      setNewPOShippingRef('');
       setExpectedDate('');
       loadData();
     } catch (e) {
@@ -105,7 +147,11 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
 
   const handleUpdatePO = () => {
     if (!selectedPO) return;
-    dbService.updatePurchaseOrder({ ...selectedPO, expected_arrival_date: expectedDate });
+    dbService.updatePurchaseOrder({ 
+        ...selectedPO, 
+        expected_arrival_date: expectedDate,
+        shipping_ref: newPOShippingRef 
+    });
     setIsEditModalOpen(false);
     loadData();
   };
@@ -123,10 +169,11 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center border-b border-gray-200 pb-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4">
         <h2 className="text-3xl font-bold text-black uppercase tracking-tight">{t.purchase_orders}</h2>
         <Button onClick={() => {
             setNewPODistributor('');
+            setNewPOShippingRef('');
             setNewPOItems([]);
             setExpectedDate('');
             setIsCreateModalOpen(true);
@@ -136,30 +183,38 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
       </div>
 
       <Card className="overflow-hidden border border-gray-200">
+        <div className="p-4 border-b border-gray-200 flex items-center gap-3">
+            {ICONS.Search}
+            <input 
+                type="text" 
+                placeholder={t.search_pos} 
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full text-sm outline-none bg-transparent font-mono"
+            />
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-800">
             <thead className="bg-gray-50 text-black uppercase font-bold text-xs border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4">{t.order_id}</th>
+                <th className="px-6 py-4">{t.shipping_placeholder}</th>
                 <th className="px-6 py-4">{t.date}</th>
-                <th className="px-6 py-4">{t.distributor}</th>
                 <th className="px-6 py-4">{t.status}</th>
                 <th className="px-6 py-4">{t.expected_arrival}</th>
                 <th className="px-6 py-4">{t.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {pos.map(po => {
-                 const distributorName = distributors.find(d => d.id === po.distributor_id)?.name || t.uncategorized;
+              {filteredPOs.map(po => {
                  return (
                     <tr 
                       key={po.id} 
                       onClick={() => handleViewPO(po)} 
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
                     >
-                      <td className="px-6 py-4 font-bold">#{po.id}</td>
+                      {/* Changed to show Shipping Ref prominently as ID */}
+                      <td className="px-6 py-4 font-mono text-blue-800 font-bold">{po.shipping_ref || '-'}</td>
                       <td className="px-6 py-4 font-mono text-xs">{formatDate(po.created_at, lang)}</td>
-                      <td className="px-6 py-4">{distributorName}</td>
                       <td className="px-6 py-4">
                           <span className={`px-2 py-1 text-xs font-bold uppercase rounded ${
                               po.status === 'received' ? 'bg-green-100 text-green-700' : 
@@ -179,7 +234,7 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
                     </tr>
                  );
               })}
-              {pos.length === 0 && (
+              {filteredPOs.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-400">{t.no_data}</td>
                 </tr>
@@ -193,35 +248,50 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
       <Modal 
         isOpen={isViewModalOpen} 
         onClose={() => setIsViewModalOpen(false)} 
-        title={`${t.purchase_orders} #${selectedPO?.id}`}
+        title={`${t.purchase_orders}: ${selectedPO?.shipping_ref}`}
       >
         {selectedPO && (
           <div className="space-y-6">
             <div className="flex justify-between text-sm text-gray-500 border-b border-gray-100 pb-4">
-              <div className="flex flex-col">
+              <div className="flex flex-col gap-1">
                   <span className="text-xs uppercase font-bold">{t.date}</span>
                   <span>{formatDate(selectedPO.created_at, lang)}</span>
               </div>
-              <div className="flex flex-col text-right">
+              <div className="flex flex-col text-right gap-1">
                  <span className="text-xs uppercase font-bold">{t.status}</span>
                  <span className="font-bold text-black uppercase">{t[`status_${selectedPO.status}` as keyof typeof t]}</span>
               </div>
             </div>
             
-            {selectedPO.expected_arrival_date && (
-                <div className="bg-gray-50 p-3 rounded text-xs font-mono border border-gray-200">
-                    <span className="font-bold text-gray-500">{t.expected_arrival}: </span>
-                    {formatDate(selectedPO.expected_arrival_date, lang)}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-3 rounded text-xs border border-gray-200">
+                    <span className="font-bold text-gray-500 block mb-1">{t.shipping_placeholder}: </span>
+                    <span className="text-lg font-mono text-black">{selectedPO.shipping_ref || '-'}</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded text-xs border border-gray-200">
+                    <span className="font-bold text-gray-500 block mb-1">{t.expected_arrival}: </span>
+                    <span className="text-lg font-mono text-black">{formatDate(selectedPO.expected_arrival_date, lang)}</span>
+                </div>
+            </div>
+            
+            {/* Show Distributor if it exists, but secondary */}
+            {selectedPO.distributor_id && (
+                <div className="text-xs text-gray-400">
+                    Distributor ID: {selectedPO.distributor_id}
                 </div>
             )}
 
-            <div className="space-y-3">
+            <div className="space-y-3 pt-2">
+              <h4 className="text-xs font-bold uppercase border-b border-gray-100 pb-2">{t.items}</h4>
               {poItems.map(item => (
                 <div key={item.id} className="flex justify-between items-center text-sm">
                   <div>
                     <p className="font-bold text-black">{item.product_name || `${t.product_id_fallback}${item.product_id}`}</p>
                   </div>
-                  <span className="font-mono">{t.qty}: {item.quantity}</span>
+                  <div className="text-right">
+                      <span className="font-mono font-bold text-lg">{item.quantity}</span>
+                      <span className="text-xs text-gray-500 ml-1">{item.unit || ''}</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -236,12 +306,20 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
         title={t.create_po}
       >
         <div className="space-y-4">
+          <Input 
+             label={t.enter_tracking_no}
+             value={newPOShippingRef}
+             onChange={e => setNewPOShippingRef(e.target.value)}
+             placeholder="CTN-2023-888"
+             className="border-b-4 border-blue-100" // Highlight
+          />
+
           <Select 
-            label={t.distributor}
+            label={`${t.distributor} (${t.optional})`}
             value={newPODistributor}
             onChange={(e) => setNewPODistributor(e.target.value)}
             options={[
-              { label: t.distributor_required, value: '' },
+              { label: '-', value: '' },
               ...distributors.map(c => ({ label: c.name, value: c.id.toString() }))
             ]}
           />
@@ -269,13 +347,14 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
               </div>
               <div className="flex-[2]">
                 <Input 
-                  label={t.qty}
+                  label={`${t.qty} ${selectedProductUnit ? `(${selectedProductUnit})` : ''}`}
                   type="number" 
+                  step="0.1" // Allow decimals
                   value={quantityToAdd} 
-                  onChange={e => setQuantityToAdd(parseInt(e.target.value))} 
+                  onChange={e => setQuantityToAdd(e.target.value)} 
                 />
               </div>
-              <Button onClick={handleAddItem} disabled={!selectedProductToAdd}>{ICONS.Add}</Button>
+              <Button onClick={handleAddItem} disabled={!selectedProductToAdd || !quantityToAdd}>{ICONS.Add}</Button>
             </div>
           </div>
 
@@ -284,7 +363,7 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
                <div key={item.product.id} className="flex justify-between items-center text-sm">
                  <span>{item.product.name}</span>
                  <div className="flex items-center gap-2">
-                   <span className="font-mono font-bold">x {item.quantity}</span>
+                   <span className="font-mono font-bold">x {item.quantity} {item.product.unit}</span>
                    <button onClick={() => handleRemoveItem(item.product.id)} className="text-gray-400 hover:text-black">
                      {ICONS.Delete}
                    </button>
@@ -296,7 +375,7 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
 
           <div className="flex justify-end gap-3 mt-4">
              <Button variant="secondary" onClick={() => setIsCreateModalOpen(false)}>{t.cancel}</Button>
-             <Button onClick={handleCreatePO} disabled={newPOItems.length === 0 || !newPODistributor}>{t.save}</Button>
+             <Button onClick={handleCreatePO} disabled={newPOItems.length === 0}>{t.save}</Button>
           </div>
         </div>
       </Modal>
@@ -305,9 +384,14 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ lang }) => {
       <Modal 
         isOpen={isEditModalOpen} 
         onClose={() => setIsEditModalOpen(false)} 
-        title={`${t.edit} #${selectedPO?.id}`}
+        title={`${t.edit} ${selectedPO?.shipping_ref}`}
       >
         <div className="space-y-6">
+            <Input 
+             label={t.shipping_placeholder}
+             value={newPOShippingRef}
+             onChange={e => setNewPOShippingRef(e.target.value)}
+            />
             <Input 
                 type="date"
                 label={t.expected_arrival}
