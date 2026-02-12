@@ -5,6 +5,7 @@ export const translations = {
   en: {
     app_name: 'Veik WMS',
     full_app_name: 'Veik Warehouse Management System',
+<<<<<<< HEAD
     dashboard: 'Overview', // Changed from Dashboard
     overview: 'Overview',
     workspace: 'Workspace', // New
@@ -15,14 +16,20 @@ export const translations = {
     amount_to_pay: 'Amount to Pay', // New
     fully_paid: 'Fully Paid', // New
     payment_added: 'Payment added successfully.', // New
+=======
+    dashboard: 'Dashboard',
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     inventory: 'Inventory',
     orders: 'Sales Orders',
     purchase_orders: 'Purchase Orders',
     settings: 'Settings',
     relationships: 'Relationships',
     total_sales: 'Total Revenue',
+<<<<<<< HEAD
     received_amount: 'Received', // New
     outstanding_amount: 'Pending', // New
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     total_orders: 'Total Orders',
     low_stock: 'Low Stock',
     recent_activity: 'Recent Activity',
@@ -66,7 +73,11 @@ export const translations = {
     import_error: 'Invalid file format.',
     no_data: 'No data available',
     loading: 'Loading system...',
+<<<<<<< HEAD
     sales_trend: 'Sales Trend',
+=======
+    sales_trend: 'Sales Trend (7 Days)',
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     general_info: 'General Info',
     contact_info: 'Contact Info',
     initializing: 'Initializing Database...',
@@ -139,8 +150,11 @@ export const translations = {
     select_sales_rep: 'Select Sales Rep',
     // New Fields
     deposit: 'Deposit',
+<<<<<<< HEAD
     discount: 'Discount',
     items_subtotal: 'Items Subtotal',
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     balance_due: 'Balance Due',
     unit_price: 'Unit Price',
     enter_order_no: 'Enter Order Number',
@@ -162,6 +176,7 @@ export const translations = {
     get_live_rate: 'Get Today\'s Rate',
     base_currency_note: 'Base currency is AED. Changing display currency only affects what you see, not the stored data.',
     settings_saved: 'Settings Saved',
+<<<<<<< HEAD
     // Inventory History
     stock_history: 'Stock History',
     log_sale: 'Sale',
@@ -182,10 +197,13 @@ export const translations = {
     start_date: 'Start Date',
     end_date: 'End Date',
     apply: 'Apply'
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
   },
   zh: {
     app_name: 'Veik WMS',
     full_app_name: 'Veik 仓储管理系统',
+<<<<<<< HEAD
     dashboard: '概览', // Changed from 仪表盘
     overview: '概览',
     workspace: '工作台', // New
@@ -205,6 +223,16 @@ export const translations = {
     received_amount: '已实收', // New
     outstanding_amount: '待收尾款', // New
     total_orders: '订单数',
+=======
+    dashboard: '概览',
+    inventory: '库存',
+    orders: '销售订单',
+    purchase_orders: '进货单',
+    settings: '系统设置', 
+    relationships: '关系管理',
+    total_sales: '总销售额',
+    total_orders: '总订单数',
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     low_stock: '低库存',
     recent_activity: '最新动态',
     add_product: '添加商品',
@@ -247,7 +275,11 @@ export const translations = {
     import_error: '文件格式错误。',
     no_data: '暂无数据',
     loading: '系统加载中...',
+<<<<<<< HEAD
     sales_trend: '销售趋势',
+=======
+    sales_trend: '销售趋势 (7天)',
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     general_info: '基本信息',
     contact_info: '联系方式',
     initializing: '初始化数据库...',
@@ -320,8 +352,11 @@ export const translations = {
     select_sales_rep: '选择销售人员',
     // New Fields
     deposit: '定金',
+<<<<<<< HEAD
     discount: '折扣 / 抹零',
     items_subtotal: '商品小计',
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     balance_due: '尾款 / 余额',
     unit_price: '销售单价',
     enter_order_no: '请输入销售单号 (必填)',
@@ -343,6 +378,7 @@ export const translations = {
     get_live_rate: '获取今日汇率',
     base_currency_note: '系统基准货币为 AED (迪拉姆)。切换显示货币仅影响展示数值，不改变数据库存储的原始金额。',
     settings_saved: '设置已保存',
+<<<<<<< HEAD
     // Inventory History
     stock_history: '库存变动记录',
     log_sale: '销售出库',
@@ -363,6 +399,8 @@ export const translations = {
     start_date: '开始日期',
     end_date: '结束日期',
     apply: '应用'
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
   }
 };
 

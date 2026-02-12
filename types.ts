@@ -50,8 +50,12 @@ export interface Order {
   contact_id: number | null;
   sales_rep_id: number | null;
   sales_rep_name?: string; // Joined field from contacts
+<<<<<<< HEAD
   total_amount: number; // This is the Final Total (Subtotal - Discount)
   discount?: number; // New field for tracking discount amount
+=======
+  total_amount: number;
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
   deposit?: number; // New field
   payment_method: 'cash' | 'card' | 'transfer';
   created_at: string;
@@ -118,4 +122,8 @@ export interface DashboardStats {
   orderCount: number;
   lowStockCount: number;
   recentOrders: Order[];
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5

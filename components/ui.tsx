@@ -87,6 +87,7 @@ export interface ModalProps {
   onClose: () => void;
   title: string;
   children?: React.ReactNode;
+<<<<<<< HEAD
   maxWidth?: string; // New prop to control width
 }
 
@@ -96,12 +97,26 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className={`bg-white border border-black shadow-2xl w-full ${maxWidth} overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]`}>
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+=======
+}
+
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white border border-black shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
           <h3 className="font-bold text-lg text-black uppercase tracking-tight">{title}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-black transition-colors">
             ✕
           </button>
         </div>
+<<<<<<< HEAD
         <div className="p-6 overflow-y-auto">
+=======
+        <div className="p-6 max-h-[80vh] overflow-y-auto">
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
           {children}
         </div>
       </div>

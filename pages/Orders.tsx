@@ -143,7 +143,10 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
         isOpen={isViewModalOpen} 
         onClose={() => setIsViewModalOpen(false)} 
         title={`${t.order_number}: ${selectedOrder?.order_number}`}
+<<<<<<< HEAD
         maxWidth="max-w-2xl"
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
       >
         {selectedOrder && (
           <div className="space-y-6">
@@ -171,6 +174,7 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
             </div>
 
             <div className="pt-4 border-t border-gray-100 space-y-2">
+<<<<<<< HEAD
                  {/* Subtotal + Discount display if applicable */}
                  {selectedOrder.discount && selectedOrder.discount > 0 ? (
                      <>
@@ -186,6 +190,8 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
                      </>
                  ) : null}
 
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
                 <div className="flex justify-between items-center font-bold text-lg text-black">
                     <span>{t.total}</span>
                     <span>{formatCurrency(selectedOrder.total_amount * currency.rate, lang, currency.code)}</span>
@@ -226,7 +232,10 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
 
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer'>('cash');
     const [deposit, setDeposit] = useState<string>(''); // Display Deposit (Converted)
+<<<<<<< HEAD
     const [discount, setDiscount] = useState<string>(''); // Display Discount (Converted)
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
 
     // Update default price when product changes
     useEffect(() => {
@@ -274,6 +283,7 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
         setNewOrderItems((prev) => prev.filter((_, i) => i !== index));
     };
 
+<<<<<<< HEAD
     // Total in AED (Subtotal)
     const calculateSubtotalAED = () => {
         return newOrderItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
@@ -292,6 +302,20 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
     const depositAmountAED = depositAmountDisplay / currency.rate;
 
     const balanceAED = Math.max(0, finalTotalAED - depositAmountAED);
+=======
+    // Total in AED
+    const calculateTotalAED = () => {
+        return newOrderItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+    };
+
+    const totalAED = calculateTotalAED();
+    
+    // Convert Deposit input (Display) to AED (Storage)
+    const depositAmountDisplay = parseFloat(deposit) || 0;
+    const depositAmountAED = depositAmountDisplay / currency.rate;
+
+    const balanceAED = Math.max(0, totalAED - depositAmountAED);
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
 
     const handleCreate = () => {
         if(!newOrderNumber) {
@@ -304,9 +328,14 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
             order_number: newOrderNumber,
             contact_id: newOrderContact ? parseInt(newOrderContact) : null,
             sales_rep_id: selectedSalesRep ? parseInt(selectedSalesRep) : null,
+<<<<<<< HEAD
             total_amount: finalTotalAED, // Store final amount after discount
             discount: discountAmountAED, // Store discount amount
             deposit: depositAmountAED, 
+=======
+            total_amount: totalAED, // Store in AED
+            deposit: depositAmountAED, // Store in AED
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
             payment_method: paymentMethod,
             created_at: new Date().toISOString()
         };
@@ -324,7 +353,10 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
         setNewOrderNumber('');
         setSelectedSalesRep('');
         setDeposit('');
+<<<<<<< HEAD
         setDiscount('');
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     }
 
     return (
@@ -332,6 +364,7 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
         isOpen={isOpen} 
         onClose={onClose} 
         title={t.new_order}
+<<<<<<< HEAD
         maxWidth="max-w-4xl" // Wider modal
       >
         <div className="space-y-6">
@@ -345,6 +378,19 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
                  placeholder="INV-2023-001"
                  className="border-b-4 border-blue-100" // Highlight this input
               />
+=======
+      >
+        <div className="space-y-4">
+          <Input 
+             label={t.enter_order_no}
+             value={newOrderNumber}
+             onChange={e => setNewOrderNumber(e.target.value)}
+             placeholder="INV-2023-001"
+             className="border-b-4 border-blue-100" // Highlight this input
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
               <Select 
                 label={t.contact}
                 value={newOrderContact}
@@ -365,11 +411,18 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
               />
           </div>
           
+<<<<<<< HEAD
           {/* Middle Section: Add Item - Improved Layout */}
           <div className="p-4 border border-gray-200 bg-gray-50 rounded">
             <h4 className="text-xs font-bold uppercase mb-3 text-gray-500">{t.add_item}</h4>
             <div className="grid grid-cols-12 gap-3 items-end">
               <div className="col-span-12 md:col-span-6">
+=======
+          <div className="p-4 border border-gray-100 bg-gray-50">
+            <h4 className="text-xs font-bold uppercase mb-3">{t.add_item}</h4>
+            <div className="flex gap-2 mb-2 items-end">
+              <div className="flex-[2]">
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
                 <Select 
                   label={t.select_product}
                   value={selectedProductToAdd}
@@ -378,10 +431,16 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
                     { label: t.select_product, value: '' },
                     ...products.filter((p: Product) => p.stock > 0).map((p: Product) => ({ label: `${p.name} (${formatCurrency(p.price * currency.rate, lang, currency.code)})`, value: p.id.toString() }))
                   ]}
+<<<<<<< HEAD
                   className="w-full"
                 />
               </div>
               <div className="col-span-6 md:col-span-3">
+=======
+                />
+              </div>
+              <div className="flex-1">
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
                  <Input 
                    type="number"
                    label={`${t.unit_price} (${currency.code})`}
@@ -389,7 +448,11 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
                    onChange={e => setPriceToAdd(parseFloat(e.target.value))}
                  />
               </div>
+<<<<<<< HEAD
               <div className="col-span-4 md:col-span-2">
+=======
+              <div className="w-20">
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
                 <Input 
                   type="number" 
                   step="0.1"
@@ -398,6 +461,7 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
                   onChange={e => setQuantityToAdd(e.target.value)} 
                 />
               </div>
+<<<<<<< HEAD
               <div className="col-span-2 md:col-span-1">
                  <Button onClick={handleAddItem} disabled={!selectedProductToAdd || priceToAdd < 0} className="w-full">{ICONS.Add}</Button>
               </div>
@@ -516,6 +580,72 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
           <div className="flex justify-end gap-3 pt-2">
              <Button variant="secondary" onClick={onClose}>{t.cancel}</Button>
              <Button onClick={handleCreate} disabled={newOrderItems.length === 0} className="px-8">{t.create_order}</Button>
+=======
+              <Button onClick={handleAddItem} disabled={!selectedProductToAdd || priceToAdd < 0}>{ICONS.Add}</Button>
+            </div>
+          </div>
+
+          <div className="max-h-40 overflow-y-auto space-y-2 border-t border-b border-gray-100 py-2">
+             {newOrderItems.map((item, idx) => (
+               <div key={idx} className="flex justify-between items-center text-sm">
+                 <div>
+                    <span className="font-medium">{item.product.name}</span>
+                    {/* Display Unit Price in Selected Currency */}
+                    <span className="text-xs text-gray-500 ml-2">@ {formatCurrency(item.unitPrice * currency.rate, lang, currency.code)}</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <span className="font-mono">{item.quantity} {item.product.unit} x {formatCurrency((item.unitPrice * item.quantity) * currency.rate, lang, currency.code)}</span>
+                   <button onClick={() => handleRemoveItem(idx)} className="text-gray-400 hover:text-black">
+                     {ICONS.Delete}
+                   </button>
+                 </div>
+               </div>
+             ))}
+             {newOrderItems.length === 0 && <p className="text-center text-gray-400 text-xs italic">{t.cart_empty}</p>}
+          </div>
+
+          <div className="flex justify-between items-center font-bold text-lg">
+             <span>{t.total}</span>
+             <span>{formatCurrency(totalAED * currency.rate, lang, currency.code)}</span>
+          </div>
+
+           <div className="grid grid-cols-2 gap-4 items-center bg-gray-50 p-3 border border-gray-100">
+               <Input 
+                  label={`${t.deposit} (${t.optional}) [${currency.code}]`}
+                  type="number"
+                  value={deposit}
+                  onChange={e => setDeposit(e.target.value)}
+                  placeholder="0.00"
+               />
+               <div className="text-right">
+                   <span className="text-xs text-gray-500 uppercase font-bold">{t.balance_due}</span>
+                   <p className="text-xl font-bold text-red-500">{formatCurrency(balanceAED * currency.rate, lang, currency.code)}</p>
+               </div>
+           </div>
+
+          <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">{t.payment_method}</label>
+              <div className="flex gap-2">
+                {(['cash', 'card', 'transfer'] as const).map(method => (
+                  <button
+                    key={method}
+                    onClick={() => setPaymentMethod(method)}
+                    className={`flex-1 py-2 text-xs uppercase font-bold border transition-colors ${
+                      paymentMethod === method
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-gray-500 border-gray-200 hover:border-black'
+                    }`}
+                  >
+                    {t[method]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+          <div className="flex justify-end gap-3 mt-4">
+             <Button variant="secondary" onClick={onClose}>{t.cancel}</Button>
+             <Button onClick={handleCreate} disabled={newOrderItems.length === 0}>{t.create_order}</Button>
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
           </div>
         </div>
       </Modal>

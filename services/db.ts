@@ -40,6 +40,7 @@ export class DatabaseService {
         // Column likely exists
       }
 
+<<<<<<< HEAD
       // MIGRATION: Attempt to add discount column
       try {
         this.db.run("ALTER TABLE orders ADD COLUMN discount REAL DEFAULT 0");
@@ -47,6 +48,8 @@ export class DatabaseService {
         // Column likely exists
       }
 
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
       this.initialized = true;
       this.save();
     } catch (err) {
@@ -106,10 +109,13 @@ export class DatabaseService {
             this.db.run("ALTER TABLE orders ADD COLUMN order_number TEXT");
         } catch (e) {}
 
+<<<<<<< HEAD
         try {
             this.db.run("ALTER TABLE orders ADD COLUMN discount REAL DEFAULT 0");
         } catch (e) {}
 
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
         // Helper to insert data
         const insertTable = (tableName: string, rows: any[]) => {
             if (!rows || rows.length === 0) return;
@@ -200,7 +206,11 @@ export class DatabaseService {
       );
     `);
 
+<<<<<<< HEAD
     // Sales Orders - Added order_number and discount
+=======
+    // Sales Orders - Added order_number
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run(`
       CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -208,7 +218,10 @@ export class DatabaseService {
         contact_id INTEGER,
         sales_rep_id INTEGER, 
         total_amount REAL,
+<<<<<<< HEAD
         discount REAL DEFAULT 0,
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
         deposit REAL DEFAULT 0,
         payment_method TEXT,
         created_at TEXT
@@ -348,7 +361,10 @@ export class DatabaseService {
             contact_id: customer.id,
             sales_rep_id: salesRep ? salesRep.id : null,
             total_amount: total,
+<<<<<<< HEAD
             discount: 0,
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
             deposit: deposit,
             payment_method: 'transfer',
             created_at: date.toISOString()
@@ -434,13 +450,21 @@ export class DatabaseService {
   }
 
   private insertOrderRecord(order: Order): number {
+<<<<<<< HEAD
      const stmt = this.db.prepare("INSERT INTO orders (order_number, contact_id, sales_rep_id, total_amount, discount, deposit, payment_method, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+=======
+     const stmt = this.db.prepare("INSERT INTO orders (order_number, contact_id, sales_rep_id, total_amount, deposit, payment_method, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
       stmt.run([
         order.order_number,
         order.contact_id, 
         order.sales_rep_id, 
+<<<<<<< HEAD
         order.total_amount, // Final total after discount
         order.discount || 0,
+=======
+        order.total_amount, 
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
         order.deposit || 0,
         order.payment_method, 
         order.created_at
@@ -483,6 +507,7 @@ export class DatabaseService {
     this.save();
   }
 
+<<<<<<< HEAD
   // --- Workspace Logic (New) ---
 
   getPendingOrders(): Order[] {
@@ -520,6 +545,10 @@ export class DatabaseService {
   // --- User Management ---
   getUsers(): User[] {
       if (!this.db) return [];
+=======
+  // --- User Management ---
+  getUsers(): User[] {
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
       const res = this.db.exec("SELECT id, username, role, name, last_active FROM users");
       return res.length ? this.mapResults(res[0]) : [];
   }
@@ -532,6 +561,7 @@ export class DatabaseService {
 
   // Auth
   login(username: string, password: string): { user: User | null, error?: string } {
+<<<<<<< HEAD
     if (!this.db) return { user: null };
     const res = this.db.exec("SELECT * FROM users WHERE username = ? AND password = ?", [username, password]);
     if (!res.length) return { user: null };
@@ -539,19 +569,30 @@ export class DatabaseService {
     
     // REMOVED CONCURRENCY CHECK HERE TO ALLOW MULTIPLE LOGINS
     
+=======
+    const res = this.db.exec("SELECT * FROM users WHERE username = ? AND password = ?", [username, password]);
+    if (!res.length) return { user: null };
+    const user = this.mapResults(res[0])[0] as User;
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run("UPDATE users SET is_logged_in = 1, last_active = ? WHERE id = ?", [new Date().toISOString(), user.id]);
     this.save();
     return { user };
   }
   
   logout(userId: number) {
+<<<<<<< HEAD
     if (!this.db) return;
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run("UPDATE users SET is_logged_in = 0 WHERE id = ?", [userId]);
     this.save();
   }
 
   registerUser(u: string, p: string, n: string, role: string = 'employee'): boolean {
+<<<<<<< HEAD
     if (!this.db) return false;
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec("SELECT id FROM users WHERE username = ?", [u]);
     if (res.length > 0) return false;
     this.db.run("INSERT INTO users (username, password, role, name, is_logged_in) VALUES (?, ?, ?, ?, 0)", [u, p, role, n]);
@@ -561,7 +602,10 @@ export class DatabaseService {
 
   // Settings
   getSettings(): Record<string, string> {
+<<<<<<< HEAD
     if (!this.db) return {};
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec("SELECT key, value FROM system_settings");
     if (!res.length) return {};
     const settings: Record<string, string> = {};
@@ -575,13 +619,17 @@ export class DatabaseService {
   }
 
   saveSetting(key: string, value: string) {
+<<<<<<< HEAD
     if (!this.db) return;
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run("INSERT OR REPLACE INTO system_settings (key, value) VALUES (?, ?)", [key, value]);
     this.save();
   }
 
   // Lookups
   getCategories(): Category[] {
+<<<<<<< HEAD
     if (!this.db) return [];
     const res = this.db.exec("SELECT * FROM categories ORDER BY name ASC");
     return res.length ? this.mapResults(res[0]) : [];
@@ -600,6 +648,23 @@ export class DatabaseService {
   // Products
   getProducts(): Product[] {
     if (!this.db) return [];
+=======
+    const res = this.db.exec("SELECT * FROM categories ORDER BY name ASC");
+    return res.length ? this.mapResults(res[0]) : [];
+  }
+  addCategory(name: string) { try { this.db.run("INSERT INTO categories (name) VALUES (?)", [name]); this.save(); } catch(e){} }
+  deleteCategory(id: number) { this.db.run("DELETE FROM categories WHERE id=?", [id]); this.save(); }
+
+  getUnits(): Unit[] {
+    const res = this.db.exec("SELECT * FROM units ORDER BY name ASC");
+    return res.length ? this.mapResults(res[0]) : [];
+  }
+  addUnit(name: string) { try { this.db.run("INSERT INTO units (name) VALUES (?)", [name]); this.save(); } catch(e){} }
+  deleteUnit(id: number) { this.db.run("DELETE FROM units WHERE id=?", [id]); this.save(); }
+
+  // Products
+  getProducts(): Product[] {
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec(`
       SELECT p.*, (SELECT COALESCE(SUM(poi.quantity), 0) FROM purchase_order_items poi JOIN purchase_orders po ON poi.po_id = po.id WHERE poi.product_id = p.id AND po.status != 'received') as incoming
       FROM products p ORDER BY p.id DESC
@@ -607,17 +672,24 @@ export class DatabaseService {
     return res.length ? this.mapResults(res[0]) : [];
   }
   addProduct(p: Product) {
+<<<<<<< HEAD
     if (!this.db) return;
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run("INSERT INTO products (name, price, cost, stock, category, unit, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)", 
       [p.name, p.price, p.cost, p.stock, p.category, p.unit || '', new Date().toISOString()]);
     this.save();
   }
   updateProduct(p: Product) {
+<<<<<<< HEAD
     if (!this.db) return;
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run("UPDATE products SET name=?, price=?, cost=?, stock=?, category=?, unit=? WHERE id=?", 
       [p.name, p.price, p.cost, p.stock, p.category, p.unit, p.id]);
     this.save();
   }
+<<<<<<< HEAD
   deleteProduct(id: number) { if (!this.db) return; this.db.run("DELETE FROM products WHERE id=?", [id]); this.save(); }
 
   // LOGS (New Feature)
@@ -640,16 +712,28 @@ export class DatabaseService {
   // Contacts
   getContacts(): Contact[] {
     if (!this.db) return [];
+=======
+  deleteProduct(id: number) { this.db.run("DELETE FROM products WHERE id=?", [id]); this.save(); }
+
+  // Contacts
+  getContacts(): Contact[] {
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec("SELECT * FROM contacts ORDER BY name ASC");
     return res.length ? this.mapResults(res[0]) : [];
   }
   getCustomers(): Contact[] {
+<<<<<<< HEAD
     if (!this.db) return [];
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec("SELECT * FROM contacts WHERE type = 'customer' ORDER BY name ASC");
     return res.length ? this.mapResults(res[0]) : [];
   }
   addContact(c: Contact) {
+<<<<<<< HEAD
     if (!this.db) return;
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run("INSERT INTO contacts (name, phone, email, address, type) VALUES (?, ?, ?, ?, ?)", 
       [c.name, c.phone || '', c.email || '', c.address || '', c.type]);
     this.save();
@@ -658,12 +742,18 @@ export class DatabaseService {
 
   // Orders
   getOrders(): Order[] {
+<<<<<<< HEAD
     if (!this.db) return [];
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec(`SELECT o.*, c.name as sales_rep_name FROM orders o LEFT JOIN contacts c ON o.sales_rep_id = c.id ORDER BY o.created_at DESC`);
     return res.length ? this.mapResults(res[0]) : [];
   }
   getOrderItems(orderId: number): OrderItem[] {
+<<<<<<< HEAD
     if (!this.db) return [];
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec(`SELECT oi.*, p.name as product_name, p.unit FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?`, [orderId]);
     return res.length ? this.mapResults(res[0]) : [];
   }
@@ -680,7 +770,10 @@ export class DatabaseService {
     return poId;
   }
   getPurchaseOrders(): PurchaseOrder[] {
+<<<<<<< HEAD
     if (!this.db) return [];
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec(`
       SELECT po.*, c.name as distributor_name 
       FROM purchase_orders po 
@@ -690,18 +783,25 @@ export class DatabaseService {
     return res.length ? this.mapResults(res[0]) : [];
   }
   getPurchaseOrderItems(poId: number): PurchaseOrderItem[] {
+<<<<<<< HEAD
     if (!this.db) return [];
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec(`SELECT poi.*, p.name as product_name, p.unit FROM purchase_order_items poi LEFT JOIN products p ON poi.product_id = p.id WHERE poi.po_id = ?`, [poId]);
     return res.length ? this.mapResults(res[0]) : [];
   }
   updatePurchaseOrder(po: PurchaseOrder) {
+<<<<<<< HEAD
     if (!this.db) return;
+=======
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run("UPDATE purchase_orders SET expected_arrival_date=?, status=?, shipping_ref=? WHERE id=?", [po.expected_arrival_date, po.status, po.shipping_ref, po.id]);
     this.save();
   }
 
   // Stats
   getDashboardStats(): DashboardStats {
+<<<<<<< HEAD
     if (!this.db) return { totalSales: 0, orderCount: 0, lowStockCount: 0, recentOrders: [] };
     const settings = this.getSettings();
     const lowStockThreshold = parseInt(settings['low_stock_threshold'] || '50');
@@ -757,6 +857,21 @@ export class DatabaseService {
     const salesTrend = trendRes.length ? this.mapResults(trendRes[0]).map((r: any) => ({ date: r.d, amount: r.total })) : [];
 
     return { totalSales, totalReceived, totalPending, totalOrders, salesTrend };
+=======
+    const settings = this.getSettings();
+    const lowStockThreshold = parseInt(settings['low_stock_threshold'] || '50');
+    
+    const orders = this.getOrders().slice(0, 10);
+    const totalSales = this.db.exec("SELECT SUM(total_amount) FROM orders")[0]?.values[0][0] || 0;
+    const orderCount = this.db.exec("SELECT COUNT(*) FROM orders")[0]?.values[0][0] || 0;
+    const lowStockCount = this.db.exec(`SELECT COUNT(*) FROM products WHERE stock < ${lowStockThreshold}`)[0]?.values[0][0] || 0;
+    return { totalSales, orderCount, lowStockCount, recentOrders: orders };
+  }
+
+  getSalesLast7Days(): {date: string, amount: number}[] {
+    const res = this.db.exec(`SELECT date(created_at) as d, SUM(total_amount) as total FROM orders WHERE created_at >= date('now', '-30 days') GROUP BY d ORDER BY d ASC`);
+    return res.length ? this.mapResults(res[0]).map((r: any) => ({ date: r.d, amount: r.total })) : [];
+>>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
   }
 
   private mapResults(result: any) {
