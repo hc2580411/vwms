@@ -486,10 +486,6 @@ export class DatabaseService {
     const res = this.db.exec("SELECT * FROM users WHERE username = ? AND password = ?", [username, password]);
     if (!res.length) return { user: null };
     const user = this.mapResults(res[0])[0] as User;
-    if (user.role === 'admin' && user.is_logged_in === 1) {
-         const lastActive = user.last_active ? new Date(user.last_active).getTime() : 0;
-         if (new Date().getTime() - lastActive < 30 * 60 * 1000) return { user: null, error: 'admin_locked' };
-    }
     this.db.run("UPDATE users SET is_logged_in = 1, last_active = ? WHERE id = ?", [new Date().toISOString(), user.id]);
     this.save();
     return { user };

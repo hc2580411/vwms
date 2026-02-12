@@ -157,7 +157,7 @@ export const translations = {
     inventory: '库存',
     orders: '销售订单',
     purchase_orders: '进货单',
-    settings: '系统设置',
+    settings: '系统设置', 
     relationships: '关系管理',
     total_sales: '总销售额',
     total_orders: '总订单数',
