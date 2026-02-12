@@ -153,7 +153,7 @@ export const translations = {
   zh: {
     app_name: 'Veik WMS',
     full_app_name: 'Veik 仓储管理系统',
-    dashboard: '仪表盘',
+    dashboard: '概览',
     inventory: '库存',
     orders: '销售订单',
     purchase_orders: '进货单',
