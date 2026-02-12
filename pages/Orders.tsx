@@ -13,9 +13,9 @@ interface OrdersProps {
 }
 
 interface NewOrderItem {
-    product: Product;
-    quantity: number;
-    unitPrice: number; // Stored as AED
+  product: Product;
+  quantity: number;
+  unitPrice: number; // Stored as AED
 }
 
 const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
@@ -28,7 +28,7 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  
+
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [salesReps, setSalesReps] = useState<Contact[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -43,15 +43,15 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
 
   useEffect(() => {
     if (!searchTerm) {
-        setFilteredOrders(orders);
-        return;
+      setFilteredOrders(orders);
+      return;
     }
     const lower = searchTerm.toLowerCase();
-    setFilteredOrders(orders.filter(o => 
-        (o.order_number && o.order_number.toLowerCase().includes(lower)) || 
-        o.id.toString().includes(lower) || 
-        (o.sales_rep_name && o.sales_rep_name.toLowerCase().includes(lower)) ||
-        (o.contact_id && o.contact_id.toString().includes(lower))
+    setFilteredOrders(orders.filter(o =>
+      (o.order_number && o.order_number.toLowerCase().includes(lower)) ||
+      o.id.toString().includes(lower) ||
+      (o.sales_rep_name && o.sales_rep_name.toLowerCase().includes(lower)) ||
+      (o.contact_id && o.contact_id.toString().includes(lower))
     ));
   }, [searchTerm, orders]);
 
@@ -76,14 +76,14 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
 
       <Card className="overflow-hidden border border-gray-200">
         <div className="p-4 border-b border-gray-200 flex items-center gap-3">
-            {ICONS.Search}
-            <input 
-                type="text" 
-                placeholder={t.search_orders} 
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="w-full text-sm outline-none bg-transparent font-mono"
-            />
+          {ICONS.Search}
+          <input
+            type="text"
+            placeholder={t.search_orders}
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full text-sm outline-none bg-transparent font-mono"
+          />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-800">
@@ -99,9 +99,9 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredOrders.map(order => (
-                <tr 
-                  key={order.id} 
-                  onClick={() => handleViewOrder(order)} 
+                <tr
+                  key={order.id}
+                  onClick={() => handleViewOrder(order)}
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4 font-bold text-blue-800 font-mono">{order.order_number || '-'}</td>
@@ -122,45 +122,42 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
         </div>
       </Card>
 
-      <OrdersModal 
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          t={t}
-          lang={lang}
-          contacts={contacts}
-          salesReps={salesReps}
-          products={products}
-          currency={currency}
-          onSave={(orderData: any, items: any) => {
-             dbService.createOrder(orderData, items);
-             setIsCreateModalOpen(false);
-             loadOrders();
-          }}
+      <OrdersModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        t={t}
+        lang={lang}
+        contacts={contacts}
+        salesReps={salesReps}
+        products={products}
+        currency={currency}
+        onSave={(orderData: any, items: any) => {
+          dbService.createOrder(orderData, items);
+          setIsCreateModalOpen(false);
+          loadOrders();
+        }}
       />
-       
+
       {/* View Modal */}
-      <Modal 
-        isOpen={isViewModalOpen} 
-        onClose={() => setIsViewModalOpen(false)} 
+      <Modal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
         title={`${t.order_number}: ${selectedOrder?.order_number}`}
-<<<<<<< HEAD
         maxWidth="max-w-2xl"
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
       >
         {selectedOrder && (
           <div className="space-y-6">
             <div className="flex justify-between text-sm text-gray-500 border-b border-gray-100 pb-4">
               <div className="flex flex-col">
-                  <span>{formatDate(selectedOrder.created_at, lang)}</span>
-                  <span className="text-xs text-gray-400">System ID: #{selectedOrder.id}</span>
+                <span>{formatDate(selectedOrder.created_at, lang)}</span>
+                <span className="text-xs text-gray-400">System ID: #{selectedOrder.id}</span>
               </div>
               <div className="text-right">
-                  <span className="font-bold text-black uppercase block">{t[selectedOrder.payment_method as keyof typeof t] || selectedOrder.payment_method}</span>
-                  <span className="text-xs text-gray-400">{t.sales_rep}: {selectedOrder.sales_rep_name}</span>
+                <span className="font-bold text-black uppercase block">{t[selectedOrder.payment_method as keyof typeof t] || selectedOrder.payment_method}</span>
+                <span className="text-xs text-gray-400">{t.sales_rep}: {selectedOrder.sales_rep_name}</span>
               </div>
             </div>
-            
+
             <div className="space-y-3">
               {orderItems.map(item => (
                 <div key={item.id} className="flex justify-between items-center text-sm">
@@ -174,40 +171,37 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
             </div>
 
             <div className="pt-4 border-t border-gray-100 space-y-2">
-<<<<<<< HEAD
-                 {/* Subtotal + Discount display if applicable */}
-                 {selectedOrder.discount && selectedOrder.discount > 0 ? (
-                     <>
-                        <div className="flex justify-between items-center text-sm text-gray-600">
-                             <span>{t.subtotal || 'Subtotal'}</span>
-                             {/* Reconstruct subtotal: total + discount */}
-                             <span>{formatCurrency((selectedOrder.total_amount + selectedOrder.discount) * currency.rate, lang, currency.code)}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm text-red-500">
-                             <span>{t.discount || 'Discount'}</span>
-                             <span>- {formatCurrency(selectedOrder.discount * currency.rate, lang, currency.code)}</span>
-                        </div>
-                     </>
-                 ) : null}
+              {/* Subtotal + Discount display if applicable */}
+              {selectedOrder.discount && selectedOrder.discount > 0 ? (
+                <>
+                  <div className="flex justify-between items-center text-sm text-gray-600">
+                    <span>{t.subtotal || 'Subtotal'}</span>
+                    {/* Reconstruct subtotal: total + discount */}
+                    <span>{formatCurrency((selectedOrder.total_amount + selectedOrder.discount) * currency.rate, lang, currency.code)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm text-red-500">
+                    <span>{t.discount || 'Discount'}</span>
+                    <span>- {formatCurrency(selectedOrder.discount * currency.rate, lang, currency.code)}</span>
+                  </div>
+                </>
+              ) : null}
 
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-                <div className="flex justify-between items-center font-bold text-lg text-black">
-                    <span>{t.total}</span>
-                    <span>{formatCurrency(selectedOrder.total_amount * currency.rate, lang, currency.code)}</span>
-                </div>
-                {selectedOrder.deposit && selectedOrder.deposit > 0 && (
-                    <>
-                    <div className="flex justify-between items-center text-sm text-gray-600">
-                        <span>{t.deposit}</span>
-                        <span>- {formatCurrency(selectedOrder.deposit * currency.rate, lang, currency.code)}</span>
-                    </div>
-                     <div className="flex justify-between items-center font-bold text-red-500 border-t border-dashed border-gray-200 pt-2">
-                        <span>{t.balance_due}</span>
-                        <span>{formatCurrency((selectedOrder.total_amount - selectedOrder.deposit) * currency.rate, lang, currency.code)}</span>
-                    </div>
-                    </>
-                )}
+              <div className="flex justify-between items-center font-bold text-lg text-black">
+                <span>{t.total}</span>
+                <span>{formatCurrency(selectedOrder.total_amount * currency.rate, lang, currency.code)}</span>
+              </div>
+              {selectedOrder.deposit && selectedOrder.deposit > 0 && (
+                <>
+                  <div className="flex justify-between items-center text-sm text-gray-600">
+                    <span>{t.deposit}</span>
+                    <span>- {formatCurrency(selectedOrder.deposit * currency.rate, lang, currency.code)}</span>
+                  </div>
+                  <div className="flex justify-between items-center font-bold text-red-500 border-t border-dashed border-gray-200 pt-2">
+                    <span>{t.balance_due}</span>
+                    <span>{formatCurrency((selectedOrder.total_amount - selectedOrder.deposit) * currency.rate, lang, currency.code)}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -219,422 +213,246 @@ const Orders: React.FC<OrdersProps> = ({ lang, currentUser, currency }) => {
 
 // Extracted Modal to handle logic cleaner
 const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, onSave, currency }: any) => {
-    const [newOrderNumber, setNewOrderNumber] = useState('');
-    const [newOrderContact, setNewOrderContact] = useState<string>('');
-    const [selectedSalesRep, setSelectedSalesRep] = useState<string>('');
-    const [newOrderItems, setNewOrderItems] = useState<NewOrderItem[]>([]);
-    
-    // Item Inputs
-    const [selectedProductToAdd, setSelectedProductToAdd] = useState<string>('');
-    const [quantityToAdd, setQuantityToAdd] = useState<string>('1');
-    const [priceToAdd, setPriceToAdd] = useState<number>(0); // Display Price (Converted)
-    const [selectedProductUnit, setSelectedProductUnit] = useState<string>('');
+  const [newOrderNumber, setNewOrderNumber] = useState('');
+  const [newOrderContact, setNewOrderContact] = useState<string>('');
+  const [selectedSalesRep, setSelectedSalesRep] = useState<string>('');
+  const [newOrderItems, setNewOrderItems] = useState<NewOrderItem[]>([]);
 
-    const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer'>('cash');
-    const [deposit, setDeposit] = useState<string>(''); // Display Deposit (Converted)
-<<<<<<< HEAD
-    const [discount, setDiscount] = useState<string>(''); // Display Discount (Converted)
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
+  // Item Inputs
+  const [selectedProductToAdd, setSelectedProductToAdd] = useState<string>('');
+  const [quantityToAdd, setQuantityToAdd] = useState<string>('1');
+  const [priceToAdd, setPriceToAdd] = useState<number>(0); // Display Price (Converted)
+  const [selectedProductUnit, setSelectedProductUnit] = useState<string>('');
 
-    // Update default price when product changes
-    useEffect(() => {
-        if (!selectedProductToAdd) {
-            setPriceToAdd(0);
-            setSelectedProductUnit('');
-            return;
-        }
-        const prod = products.find((p: Product) => p.id.toString() === selectedProductToAdd);
-        if (prod) {
-            // Initial load of price is converted to display currency
-            setPriceToAdd(parseFloat((prod.price * currency.rate).toFixed(2)));
-            setSelectedProductUnit(prod.unit);
-        }
-    }, [selectedProductToAdd, products, currency.rate]);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer'>('cash');
+  const [deposit, setDeposit] = useState<string>(''); // Display Deposit (Converted)
+  const [discount, setDiscount] = useState<string>(''); // Display Discount (Converted)
 
-    const handleAddItem = () => {
-        if (!selectedProductToAdd) return;
-        const prod = products.find((p: Product) => p.id.toString() === selectedProductToAdd);
-        if (!prod) return;
-        
-        const qty = parseFloat(quantityToAdd);
-        if (isNaN(qty) || qty <= 0) return;
-    
-        // Convert display price back to AED for storage
-        const unitPriceAED = priceToAdd / currency.rate;
+  // Update default price when product changes
+  useEffect(() => {
+    if (!selectedProductToAdd) {
+      setPriceToAdd(0);
+      setSelectedProductUnit('');
+      return;
+    }
+    const prod = products.find((p: Product) => p.id.toString() === selectedProductToAdd);
+    if (prod) {
+      // Initial load of price is converted to display currency
+      setPriceToAdd(parseFloat((prod.price * currency.rate).toFixed(2)));
+      setSelectedProductUnit(prod.unit);
+    }
+  }, [selectedProductToAdd, products, currency.rate]);
 
-        setNewOrderItems((prev) => {
-          // We use unitPriceAED for storage/logic
-          const existsIndex = prev.findIndex((i) => i.product.id === prod.id && Math.abs(i.unitPrice - unitPriceAED) < 0.01);
-          if (existsIndex >= 0) {
-              const updated = [...prev];
-              updated[existsIndex].quantity += qty;
-              return updated;
-          }
-          return [...prev, { product: prod, quantity: qty, unitPrice: unitPriceAED }];
-        });
-        
-        setQuantityToAdd('1');
-        setSelectedProductToAdd('');
-        setPriceToAdd(0);
-    };
+  const handleAddItem = () => {
+    if (!selectedProductToAdd) return;
+    const prod = products.find((p: Product) => p.id.toString() === selectedProductToAdd);
+    if (!prod) return;
 
-    const handleRemoveItem = (index: number) => {
-        setNewOrderItems((prev) => prev.filter((_, i) => i !== index));
-    };
+    const qty = parseFloat(quantityToAdd);
+    if (isNaN(qty) || qty <= 0) return;
 
-<<<<<<< HEAD
-    // Total in AED (Subtotal)
-    const calculateSubtotalAED = () => {
-        return newOrderItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-    };
+    // Convert display price back to AED for storage
+    const unitPriceAED = priceToAdd / currency.rate;
 
-    const subtotalAED = calculateSubtotalAED();
-    
-    // Calculations
-    const discountAmountDisplay = parseFloat(discount) || 0;
-    const discountAmountAED = discountAmountDisplay / currency.rate;
-    
-    // Net Total after discount
-    const finalTotalAED = Math.max(0, subtotalAED - discountAmountAED);
+    setNewOrderItems((prev) => {
+      // We use unitPriceAED for storage/logic
+      const existsIndex = prev.findIndex((i) => i.product.id === prod.id && Math.abs(i.unitPrice - unitPriceAED) < 0.01);
+      if (existsIndex >= 0) {
+        const updated = [...prev];
+        updated[existsIndex].quantity += qty;
+        return updated;
+      }
+      return [...prev, { product: prod, quantity: qty, unitPrice: unitPriceAED }];
+    });
 
-    const depositAmountDisplay = parseFloat(deposit) || 0;
-    const depositAmountAED = depositAmountDisplay / currency.rate;
+    setQuantityToAdd('1');
+    setSelectedProductToAdd('');
+    setPriceToAdd(0);
+  };
 
-    const balanceAED = Math.max(0, finalTotalAED - depositAmountAED);
-=======
-    // Total in AED
-    const calculateTotalAED = () => {
-        return newOrderItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-    };
+  const handleRemoveItem = (index: number) => {
+    setNewOrderItems((prev) => prev.filter((_, i) => i !== index));
+  };
 
-    const totalAED = calculateTotalAED();
-    
-    // Convert Deposit input (Display) to AED (Storage)
-    const depositAmountDisplay = parseFloat(deposit) || 0;
-    const depositAmountAED = depositAmountDisplay / currency.rate;
+  // Total in AED (Subtotal)
+  const calculateSubtotalAED = () => {
+    return newOrderItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+  };
 
-    const balanceAED = Math.max(0, totalAED - depositAmountAED);
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
+  const subtotalAED = calculateSubtotalAED();
 
-    const handleCreate = () => {
-        if(!newOrderNumber) {
-            alert(t.enter_order_no);
-            return;
-        }
+  // Calculations
+  const discountAmountDisplay = parseFloat(discount) || 0;
+  const discountAmountAED = discountAmountDisplay / currency.rate;
 
-        const orderData = {
-            id: 0,
-            order_number: newOrderNumber,
-            contact_id: newOrderContact ? parseInt(newOrderContact) : null,
-            sales_rep_id: selectedSalesRep ? parseInt(selectedSalesRep) : null,
-<<<<<<< HEAD
-            total_amount: finalTotalAED, // Store final amount after discount
-            discount: discountAmountAED, // Store discount amount
-            deposit: depositAmountAED, 
-=======
-            total_amount: totalAED, // Store in AED
-            deposit: depositAmountAED, // Store in AED
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-            payment_method: paymentMethod,
-            created_at: new Date().toISOString()
-        };
-        
-        onSave(orderData, newOrderItems.map((i) => ({
-            id: 0,
-            order_id: 0,
-            product_id: i.product.id,
-            quantity: i.quantity,
-            price_at_sale: i.unitPrice // Store in AED
-        })));
-        
-        setNewOrderItems([]);
-        setNewOrderContact('');
-        setNewOrderNumber('');
-        setSelectedSalesRep('');
-        setDeposit('');
-<<<<<<< HEAD
-        setDiscount('');
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
+  // Net Total after discount
+  const finalTotalAED = Math.max(0, subtotalAED - discountAmountAED);
+
+  const depositAmountDisplay = parseFloat(deposit) || 0;
+  const depositAmountAED = depositAmountDisplay / currency.rate;
+
+  const balanceAED = Math.max(0, finalTotalAED - depositAmountAED);
+
+  const handleCreate = () => {
+    if (!newOrderNumber) {
+      alert(t.enter_order_no);
+      return;
     }
 
-    return (
-      <Modal 
-        isOpen={isOpen} 
-        onClose={onClose} 
-        title={t.new_order}
-<<<<<<< HEAD
-        maxWidth="max-w-4xl" // Wider modal
-      >
-        <div className="space-y-6">
-          
-          {/* Top Section: Meta Data */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input 
-                 label={t.enter_order_no}
-                 value={newOrderNumber}
-                 onChange={e => setNewOrderNumber(e.target.value)}
-                 placeholder="INV-2023-001"
-                 className="border-b-4 border-blue-100" // Highlight this input
-              />
-=======
-      >
-        <div className="space-y-4">
-          <Input 
-             label={t.enter_order_no}
-             value={newOrderNumber}
-             onChange={e => setNewOrderNumber(e.target.value)}
-             placeholder="INV-2023-001"
-             className="border-b-4 border-blue-100" // Highlight this input
+    const orderData = {
+      id: 0,
+      order_number: newOrderNumber,
+      contact_id: newOrderContact ? parseInt(newOrderContact) : null,
+      sales_rep_id: selectedSalesRep ? parseInt(selectedSalesRep) : null,
+      total_amount: finalTotalAED, // Store final amount after discount
+      discount: discountAmountAED, // Store discount amount
+      deposit: depositAmountAED,
+      payment_method: paymentMethod,
+      created_at: new Date().toISOString()
+    };
+
+    onSave(orderData, newOrderItems.map((i) => ({
+      id: 0,
+      order_id: 0,
+      product_id: i.product.id,
+      quantity: i.quantity,
+      price_at_sale: i.unitPrice // Store in AED
+    })));
+
+    setNewOrderItems([]);
+    setNewOrderContact('');
+    setNewOrderNumber('');
+    setSelectedSalesRep('');
+    setDeposit('');
+    setDiscount('');
+  }
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t.new_order}
+      maxWidth="max-w-4xl" // Wider modal
+    >
+      <div className="space-y-6">
+
+        {/* Top Section: Meta Data */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Input
+            label={t.enter_order_no}
+            value={newOrderNumber}
+            onChange={e => setNewOrderNumber(e.target.value)}
+            placeholder="INV-2023-001"
+            className="border-b-4 border-blue-100" // Highlight this input
           />
 
-          <div className="grid grid-cols-2 gap-4">
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-              <Select 
-                label={t.contact}
-                value={newOrderContact}
-                onChange={(e) => setNewOrderContact(e.target.value)}
+          <Select
+            label={t.contact}
+            value={newOrderContact}
+            onChange={(e) => setNewOrderContact(e.target.value)}
+            options={[
+              { label: t.walk_in, value: '' },
+              ...contacts.map((c: Contact) => ({ label: `${c.name}`, value: c.id.toString() }))
+            ]}
+          />
+          <Select
+            label={t.select_sales_rep || 'Sales Rep'}
+            value={selectedSalesRep}
+            onChange={(e) => setSelectedSalesRep(e.target.value)}
+            options={[
+              { label: '-', value: '' },
+              ...salesReps.map((c: Contact) => ({ label: c.name, value: c.id.toString() }))
+            ]}
+          />
+        </div>
+
+        {/* Middle Section: Add Item - Improved Layout */}
+        <div className="p-4 border border-gray-200 bg-gray-50 rounded">
+          <h4 className="text-xs font-bold uppercase mb-3 text-gray-500">{t.add_item}</h4>
+          <div className="grid grid-cols-12 gap-3 items-end">
+            <div className="col-span-12 md:col-span-6">
+              <Select
+                label={t.select_product}
+                value={selectedProductToAdd}
+                onChange={e => setSelectedProductToAdd(e.target.value)}
                 options={[
-                  { label: t.walk_in, value: '' },
-                  ...contacts.map((c: Contact) => ({ label: `${c.name}`, value: c.id.toString() }))
+                  { label: t.select_product, value: '' },
+                  ...products.filter((p: Product) => p.stock > 0).map((p: Product) => ({ label: `${p.name} (${formatCurrency(p.price * currency.rate, lang, currency.code)})`, value: p.id.toString() }))
                 ]}
+                className="w-full"
               />
-              <Select 
-                label={t.select_sales_rep || 'Sales Rep'}
-                value={selectedSalesRep}
-                onChange={(e) => setSelectedSalesRep(e.target.value)}
-                options={[
-                  { label: '-', value: '' },
-                  ...salesReps.map((c: Contact) => ({ label: c.name, value: c.id.toString() }))
-                ]}
+            </div>
+            <div className="col-span-6 md:col-span-3">
+              <Input
+                type="number"
+                label={`${t.unit_price} (${currency.code})`}
+                value={priceToAdd}
+                onChange={e => setPriceToAdd(parseFloat(e.target.value))}
               />
-          </div>
-          
-<<<<<<< HEAD
-          {/* Middle Section: Add Item - Improved Layout */}
-          <div className="p-4 border border-gray-200 bg-gray-50 rounded">
-            <h4 className="text-xs font-bold uppercase mb-3 text-gray-500">{t.add_item}</h4>
-            <div className="grid grid-cols-12 gap-3 items-end">
-              <div className="col-span-12 md:col-span-6">
-=======
-          <div className="p-4 border border-gray-100 bg-gray-50">
-            <h4 className="text-xs font-bold uppercase mb-3">{t.add_item}</h4>
-            <div className="flex gap-2 mb-2 items-end">
-              <div className="flex-[2]">
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-                <Select 
-                  label={t.select_product}
-                  value={selectedProductToAdd}
-                  onChange={e => setSelectedProductToAdd(e.target.value)}
-                  options={[
-                    { label: t.select_product, value: '' },
-                    ...products.filter((p: Product) => p.stock > 0).map((p: Product) => ({ label: `${p.name} (${formatCurrency(p.price * currency.rate, lang, currency.code)})`, value: p.id.toString() }))
-                  ]}
-<<<<<<< HEAD
-                  className="w-full"
-                />
-              </div>
-              <div className="col-span-6 md:col-span-3">
-=======
-                />
-              </div>
-              <div className="flex-1">
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-                 <Input 
-                   type="number"
-                   label={`${t.unit_price} (${currency.code})`}
-                   value={priceToAdd}
-                   onChange={e => setPriceToAdd(parseFloat(e.target.value))}
-                 />
-              </div>
-<<<<<<< HEAD
-              <div className="col-span-4 md:col-span-2">
-=======
-              <div className="w-20">
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-                <Input 
-                  type="number" 
-                  step="0.1"
-                  label={`${t.qty} ${selectedProductUnit ? `(${selectedProductUnit})` : ''}`}
-                  value={quantityToAdd} 
-                  onChange={e => setQuantityToAdd(e.target.value)} 
-                />
-              </div>
-<<<<<<< HEAD
-              <div className="col-span-2 md:col-span-1">
-                 <Button onClick={handleAddItem} disabled={!selectedProductToAdd || priceToAdd < 0} className="w-full">{ICONS.Add}</Button>
-              </div>
+            </div>
+            <div className="col-span-4 md:col-span-2">
+              <Input
+                type="number"
+                step="0.1"
+                label={`${t.qty} ${selectedProductUnit ? `(${selectedProductUnit})` : ''}`}
+                value={quantityToAdd}
+                onChange={e => setQuantityToAdd(e.target.value)}
+              />
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <Button onClick={handleAddItem} disabled={!selectedProductToAdd || priceToAdd < 0} className="w-full">{ICONS.Add}</Button>
             </div>
           </div>
+        </div>
 
-          {/* Item List */}
-          <div className="min-h-[150px] max-h-[300px] overflow-y-auto border border-gray-100 rounded">
-             <table className="w-full text-left text-sm">
-                 <thead className="bg-white sticky top-0 border-b border-gray-100 text-xs text-gray-400 font-medium">
-                     <tr>
-                         <th className="px-3 py-2 pl-4">{t.name}</th>
-                         <th className="px-3 py-2 text-right">{t.price}</th>
-                         <th className="px-3 py-2 text-right">{t.qty}</th>
-                         <th className="px-3 py-2 text-right">{t.subtotal}</th>
-                         <th className="px-3 py-2 w-10"></th>
-                     </tr>
-                 </thead>
-                 <tbody className="divide-y divide-gray-50">
-                     {newOrderItems.map((item, idx) => (
-                       <tr key={idx} className="hover:bg-gray-50">
-                         <td className="px-3 py-2 pl-4 font-medium">{item.product.name}</td>
-                         <td className="px-3 py-2 text-right text-xs text-gray-500">{formatCurrency(item.unitPrice * currency.rate, lang, currency.code)}</td>
-                         <td className="px-3 py-2 text-right font-mono text-xs">{item.quantity} {item.product.unit}</td>
-                         <td className="px-3 py-2 text-right font-bold">{formatCurrency((item.unitPrice * item.quantity) * currency.rate, lang, currency.code)}</td>
-                         <td className="px-3 py-2 text-center">
-                             <button onClick={() => handleRemoveItem(idx)} className="text-gray-400 hover:text-red-500">
-                               {ICONS.Delete}
-                             </button>
-                         </td>
-                       </tr>
-                     ))}
-                     {newOrderItems.length === 0 && (
-                         <tr><td colSpan={5} className="p-8 text-center text-gray-300 italic">{t.cart_empty}</td></tr>
-                     )}
-                 </tbody>
-             </table>
-          </div>
+        {/* Item List */}
+        <div className="min-h-[150px] max-h-[300px] overflow-y-auto border border-gray-100 rounded">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-white sticky top-0 border-b border-gray-100 text-xs text-gray-400 font-medium">
+              <tr>
+                <th className="px-3 py-2 pl-4">{t.name}</th>
+                <th className="px-3 py-2 text-right">{t.price}</th>
+                <th className="px-3 py-2 text-right">{t.qty}</th>
+                <th className="px-3 py-2 text-right">{t.subtotal}</th>
+                <th className="px-3 py-2 w-10"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {newOrderItems.map((item, idx) => (
+                <tr key={idx} className="hover:bg-gray-50">
+                  <td className="px-3 py-2 pl-4 font-medium">{item.product.name}</td>
+                  <td className="px-3 py-2 text-right text-xs text-gray-500">{formatCurrency(item.unitPrice * currency.rate, lang, currency.code)}</td>
+                  <td className="px-3 py-2 text-right font-mono text-xs">{item.quantity} {item.product.unit}</td>
+                  <td className="px-3 py-2 text-right font-bold">{formatCurrency((item.unitPrice * item.quantity) * currency.rate, lang, currency.code)}</td>
+                  <td className="px-3 py-2 text-center">
+                    <button onClick={() => handleRemoveItem(idx)} className="text-gray-400 hover:text-red-500">
+                      {ICONS.Delete}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {newOrderItems.length === 0 && (
+                <tr><td colSpan={5} className="p-8 text-center text-gray-300 italic">{t.cart_empty}</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-          {/* Bottom Section: Totals & Payments */}
-          <div className="flex flex-col md:flex-row gap-6 items-start border-t border-gray-100 pt-4">
-              {/* Payment Info */}
-              <div className="flex-1 w-full space-y-4">
-                  <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">{t.payment_method}</label>
-                      <div className="flex gap-2">
-                        {(['cash', 'card', 'transfer'] as const).map(method => (
-                          <button
-                            key={method}
-                            onClick={() => setPaymentMethod(method)}
-                            className={`flex-1 py-2 px-3 text-xs uppercase font-bold border transition-colors rounded-sm ${
-                              paymentMethod === method
-                                ? 'bg-black text-white border-black'
-                                : 'bg-white text-gray-500 border-gray-200 hover:border-black'
-                            }`}
-                          >
-                            {t[method]}
-                          </button>
-                        ))}
-                      </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                     <Input 
-                        label={`${t.discount} (${t.optional}) [${currency.code}]`}
-                        type="number"
-                        value={discount}
-                        onChange={e => setDiscount(e.target.value)}
-                        placeholder="0.00"
-                        className="text-red-500"
-                      />
-                      <Input 
-                          label={`${t.deposit} (${t.optional}) [${currency.code}]`}
-                          type="number"
-                          value={deposit}
-                          onChange={e => setDeposit(e.target.value)}
-                          placeholder="0.00"
-                      />
-                  </div>
-              </div>
-
-              {/* Totals Display */}
-              <div className="w-full md:w-64 bg-gray-50 p-4 rounded border border-gray-100 space-y-3">
-                  <div className="flex justify-between items-center text-sm text-gray-600">
-                     <span>{t.items_subtotal || 'Subtotal'}</span>
-                     <span className="font-medium text-black">{formatCurrency(subtotalAED * currency.rate, lang, currency.code)}</span>
-                  </div>
-                  
-                  {discountAmountDisplay > 0 && (
-                      <div className="flex justify-between items-center text-xs text-red-500">
-                          <span>{t.discount}</span>
-                          <span>- {formatCurrency(discountAmountAED * currency.rate, lang, currency.code)}</span>
-                      </div>
-                  )}
-
-                  <div className="flex justify-between items-center text-sm border-t border-gray-200 pt-2">
-                     <span className="font-bold">{t.total}</span>
-                     <span className="font-bold text-black text-lg">{formatCurrency(finalTotalAED * currency.rate, lang, currency.code)}</span>
-                  </div>
-
-                  {depositAmountDisplay > 0 && (
-                     <>
-                      <div className="flex justify-between items-center text-xs text-green-600">
-                          <span>{t.deposit}</span>
-                          <span>- {formatCurrency(depositAmountAED * currency.rate, lang, currency.code)}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm font-bold text-red-500 border-t border-gray-200 pt-2">
-                          <span>{t.balance_due}</span>
-                          <span>{formatCurrency(balanceAED * currency.rate, lang, currency.code)}</span>
-                      </div>
-                     </>
-                  )}
-              </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-             <Button variant="secondary" onClick={onClose}>{t.cancel}</Button>
-             <Button onClick={handleCreate} disabled={newOrderItems.length === 0} className="px-8">{t.create_order}</Button>
-=======
-              <Button onClick={handleAddItem} disabled={!selectedProductToAdd || priceToAdd < 0}>{ICONS.Add}</Button>
-            </div>
-          </div>
-
-          <div className="max-h-40 overflow-y-auto space-y-2 border-t border-b border-gray-100 py-2">
-             {newOrderItems.map((item, idx) => (
-               <div key={idx} className="flex justify-between items-center text-sm">
-                 <div>
-                    <span className="font-medium">{item.product.name}</span>
-                    {/* Display Unit Price in Selected Currency */}
-                    <span className="text-xs text-gray-500 ml-2">@ {formatCurrency(item.unitPrice * currency.rate, lang, currency.code)}</span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <span className="font-mono">{item.quantity} {item.product.unit} x {formatCurrency((item.unitPrice * item.quantity) * currency.rate, lang, currency.code)}</span>
-                   <button onClick={() => handleRemoveItem(idx)} className="text-gray-400 hover:text-black">
-                     {ICONS.Delete}
-                   </button>
-                 </div>
-               </div>
-             ))}
-             {newOrderItems.length === 0 && <p className="text-center text-gray-400 text-xs italic">{t.cart_empty}</p>}
-          </div>
-
-          <div className="flex justify-between items-center font-bold text-lg">
-             <span>{t.total}</span>
-             <span>{formatCurrency(totalAED * currency.rate, lang, currency.code)}</span>
-          </div>
-
-           <div className="grid grid-cols-2 gap-4 items-center bg-gray-50 p-3 border border-gray-100">
-               <Input 
-                  label={`${t.deposit} (${t.optional}) [${currency.code}]`}
-                  type="number"
-                  value={deposit}
-                  onChange={e => setDeposit(e.target.value)}
-                  placeholder="0.00"
-               />
-               <div className="text-right">
-                   <span className="text-xs text-gray-500 uppercase font-bold">{t.balance_due}</span>
-                   <p className="text-xl font-bold text-red-500">{formatCurrency(balanceAED * currency.rate, lang, currency.code)}</p>
-               </div>
-           </div>
-
-          <div>
+        {/* Bottom Section: Totals & Payments */}
+        <div className="flex flex-col md:flex-row gap-6 items-start border-t border-gray-100 pt-4">
+          {/* Payment Info */}
+          <div className="flex-1 w-full space-y-4">
+            <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">{t.payment_method}</label>
               <div className="flex gap-2">
                 {(['cash', 'card', 'transfer'] as const).map(method => (
                   <button
                     key={method}
                     onClick={() => setPaymentMethod(method)}
-                    className={`flex-1 py-2 text-xs uppercase font-bold border transition-colors ${
-                      paymentMethod === method
+                    className={`flex-1 py-2 px-3 text-xs uppercase font-bold border transition-colors rounded-sm ${paymentMethod === method
                         ? 'bg-black text-white border-black'
                         : 'bg-white text-gray-500 border-gray-200 hover:border-black'
-                    }`}
+                      }`}
                   >
                     {t[method]}
                   </button>
@@ -642,14 +460,66 @@ const OrdersModal = ({ isOpen, onClose, t, lang, contacts, salesReps, products, 
               </div>
             </div>
 
-          <div className="flex justify-end gap-3 mt-4">
-             <Button variant="secondary" onClick={onClose}>{t.cancel}</Button>
-             <Button onClick={handleCreate} disabled={newOrderItems.length === 0}>{t.create_order}</Button>
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label={`${t.discount} (${t.optional}) [${currency.code}]`}
+                type="number"
+                value={discount}
+                onChange={e => setDiscount(e.target.value)}
+                placeholder="0.00"
+                className="text-red-500"
+              />
+              <Input
+                label={`${t.deposit} (${t.optional}) [${currency.code}]`}
+                type="number"
+                value={deposit}
+                onChange={e => setDeposit(e.target.value)}
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          {/* Totals Display */}
+          <div className="w-full md:w-64 bg-gray-50 p-4 rounded border border-gray-100 space-y-3">
+            <div className="flex justify-between items-center text-sm text-gray-600">
+              <span>{t.items_subtotal || 'Subtotal'}</span>
+              <span className="font-medium text-black">{formatCurrency(subtotalAED * currency.rate, lang, currency.code)}</span>
+            </div>
+
+            {discountAmountDisplay > 0 && (
+              <div className="flex justify-between items-center text-xs text-red-500">
+                <span>{t.discount}</span>
+                <span>- {formatCurrency(discountAmountAED * currency.rate, lang, currency.code)}</span>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center text-sm border-t border-gray-200 pt-2">
+              <span className="font-bold">{t.total}</span>
+              <span className="font-bold text-black text-lg">{formatCurrency(finalTotalAED * currency.rate, lang, currency.code)}</span>
+            </div>
+
+            {depositAmountDisplay > 0 && (
+              <>
+                <div className="flex justify-between items-center text-xs text-green-600">
+                  <span>{t.deposit}</span>
+                  <span>- {formatCurrency(depositAmountAED * currency.rate, lang, currency.code)}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm font-bold text-red-500 border-t border-gray-200 pt-2">
+                  <span>{t.balance_due}</span>
+                  <span>{formatCurrency(balanceAED * currency.rate, lang, currency.code)}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
-      </Modal>
-    );
+
+        <div className="flex justify-end gap-3 pt-2">
+          <Button variant="secondary" onClick={onClose}>{t.cancel}</Button>
+          <Button onClick={handleCreate} disabled={newOrderItems.length === 0} className="px-8">{t.create_order}</Button>
+        </div>
+      </div>
+    </Modal>
+  );
 }
 
 export default Orders;

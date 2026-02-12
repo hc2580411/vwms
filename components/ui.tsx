@@ -17,9 +17,9 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   children?: React.ReactNode;
 }
 
-export const Button: React.FC<ButtonProps> = ({ 
-  children, 
-  variant = 'primary', 
+export const Button: React.FC<ButtonProps> = ({
+  children,
+  variant = 'primary',
   className = '',
   ...props
 }) => {
@@ -42,14 +42,14 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   label?: string;
 }
 
-export const Input: React.FC<InputProps> = ({ 
-  label, 
+export const Input: React.FC<InputProps> = ({
+  label,
   className = "",
   ...props
 }) => (
   <div className={`flex flex-col gap-1 ${className}`}>
     {label && <label className="text-xs font-bold uppercase tracking-wider text-gray-500">{label}</label>}
-    <input 
+    <input
       className="border border-gray-300 px-3 py-2 text-sm focus:border-black focus:ring-0 outline-none transition-colors rounded-none"
       {...props}
     />
@@ -87,7 +87,6 @@ export interface ModalProps {
   onClose: () => void;
   title: string;
   children?: React.ReactNode;
-<<<<<<< HEAD
   maxWidth?: string; // New prop to control width
 }
 
@@ -97,26 +96,12 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className={`bg-white border border-black shadow-2xl w-full ${maxWidth} overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]`}>
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
-=======
-}
-
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white border border-black shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
           <h3 className="font-bold text-lg text-black uppercase tracking-tight">{title}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-black transition-colors">
             ✕
           </button>
         </div>
-<<<<<<< HEAD
         <div className="p-6 overflow-y-auto">
-=======
-        <div className="p-6 max-h-[80vh] overflow-y-auto">
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
           {children}
         </div>
       </div>
@@ -159,8 +144,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <Button variant="secondary" onClick={onClose}>
             {cancelText}
           </Button>
-          <Button 
-            variant={isDanger ? 'danger' : 'primary'} 
+          <Button
+            variant={isDanger ? 'danger' : 'primary'}
             onClick={() => { onConfirm(); onClose(); }}
             className={isDanger ? 'bg-red-600 text-white border-red-600 hover:bg-red-700' : ''}
           >

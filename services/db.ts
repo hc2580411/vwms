@@ -32,7 +32,7 @@ export class DatabaseService {
         this.createTables();
         this.seedData();
       }
-      
+
       // MIGRATION: Attempt to add order_number column if it doesn't exist
       try {
         this.db.run("ALTER TABLE orders ADD COLUMN order_number TEXT");
@@ -40,16 +40,12 @@ export class DatabaseService {
         // Column likely exists
       }
 
-<<<<<<< HEAD
       // MIGRATION: Attempt to add discount column
       try {
         this.db.run("ALTER TABLE orders ADD COLUMN discount REAL DEFAULT 0");
       } catch (e) {
         // Column likely exists
       }
-
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
       this.initialized = true;
       this.save();
     } catch (err) {
@@ -67,7 +63,7 @@ export class DatabaseService {
 
   reset() {
     // 1. Nullify db reference to prevent any pending operations from saving
-    this.db = null; 
+    this.db = null;
     this.initialized = false;
     // 2. Clear storage
     localStorage.removeItem(DB_NAME);
@@ -76,69 +72,65 @@ export class DatabaseService {
   }
 
   // --- Data Management (Export/Import) ---
-  
+
   exportData(): string {
     if (!this.db) return '';
     // We export the raw SQLite tables as JSON for portability
     const tables = ['users', 'system_settings', 'categories', 'units', 'products', 'contacts', 'orders', 'order_items', 'purchase_orders', 'purchase_order_items', 'inventory_logs'];
     const exportObj: any = {};
-    
+
     tables.forEach(table => {
-        const res = this.db.exec(`SELECT * FROM ${table}`);
-        if (res.length > 0) {
-            exportObj[table] = this.mapResults(res[0]);
-        } else {
-            exportObj[table] = [];
-        }
+      const res = this.db.exec(`SELECT * FROM ${table}`);
+      if (res.length > 0) {
+        exportObj[table] = this.mapResults(res[0]);
+      } else {
+        exportObj[table] = [];
+      }
     });
-    
+
     return JSON.stringify(exportObj, null, 2);
   }
 
   importData(jsonString: string): boolean {
     try {
-        const data = JSON.parse(jsonString);
-        if (!data.products || !data.users) return false; // Basic validation
+      const data = JSON.parse(jsonString);
+      if (!data.products || !data.users) return false; // Basic validation
 
-        // Reset DB tables
-        this.db = new this.SQL.Database();
-        this.createTables();
-        
-        // MIGRATION for restored data if needed
-        try {
-            this.db.run("ALTER TABLE orders ADD COLUMN order_number TEXT");
-        } catch (e) {}
+      // Reset DB tables
+      this.db = new this.SQL.Database();
+      this.createTables();
 
-<<<<<<< HEAD
-        try {
-            this.db.run("ALTER TABLE orders ADD COLUMN discount REAL DEFAULT 0");
-        } catch (e) {}
+      // MIGRATION for restored data if needed
+      try {
+        this.db.run("ALTER TABLE orders ADD COLUMN order_number TEXT");
+      } catch (e) { }
 
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-        // Helper to insert data
-        const insertTable = (tableName: string, rows: any[]) => {
-            if (!rows || rows.length === 0) return;
-            const keys = Object.keys(rows[0]);
-            // Filter keys to match current schema if needed, but for now assume matching
-            const placeholders = keys.map(() => '?').join(',');
-            const stmt = this.db.prepare(`INSERT INTO ${tableName} (${keys.join(',')}) VALUES (${placeholders})`);
-            rows.forEach(row => {
-                const values = keys.map(k => row[k]);
-                stmt.run(values);
-            });
-            stmt.free();
-        };
-
-        Object.keys(data).forEach(table => {
-            insertTable(table, data[table]);
+      try {
+        this.db.run("ALTER TABLE orders ADD COLUMN discount REAL DEFAULT 0");
+      } catch (e) { }
+      // Helper to insert data
+      const insertTable = (tableName: string, rows: any[]) => {
+        if (!rows || rows.length === 0) return;
+        const keys = Object.keys(rows[0]);
+        // Filter keys to match current schema if needed, but for now assume matching
+        const placeholders = keys.map(() => '?').join(',');
+        const stmt = this.db.prepare(`INSERT INTO ${tableName} (${keys.join(',')}) VALUES (${placeholders})`);
+        rows.forEach(row => {
+          const values = keys.map(k => row[k]);
+          stmt.run(values);
         });
+        stmt.free();
+      };
 
-        this.save();
-        return true;
+      Object.keys(data).forEach(table => {
+        insertTable(table, data[table]);
+      });
+
+      this.save();
+      return true;
     } catch (e) {
-        console.error("Import failed", e);
-        return false;
+      console.error("Import failed", e);
+      return false;
     }
   }
 
@@ -206,11 +198,7 @@ export class DatabaseService {
       );
     `);
 
-<<<<<<< HEAD
     // Sales Orders - Added order_number and discount
-=======
-    // Sales Orders - Added order_number
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run(`
       CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -218,16 +206,13 @@ export class DatabaseService {
         contact_id INTEGER,
         sales_rep_id INTEGER, 
         total_amount REAL,
-<<<<<<< HEAD
         discount REAL DEFAULT 0,
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
         deposit REAL DEFAULT 0,
         payment_method TEXT,
         created_at TEXT
       );
     `);
-    
+
     // CHANGED quantity to REAL
     this.db.run(`
       CREATE TABLE IF NOT EXISTS order_items (
@@ -250,7 +235,7 @@ export class DatabaseService {
         created_at TEXT
       );
     `);
-    
+
     // CHANGED quantity to REAL
     this.db.run(`
       CREATE TABLE IF NOT EXISTS purchase_order_items (
@@ -327,112 +312,109 @@ export class DatabaseService {
 
     // SEED SALES ORDERS
     for (let i = 0; i < 30; i++) {
-        const daysAgo = Math.floor(Math.random() * 60); // 2 months history
-        const date = new Date();
-        date.setDate(date.getDate() - daysAgo);
-        
-        const customer = customerList[Math.floor(Math.random() * customerList.length)];
-        const salesRep = salesRepList.length > 0 ? salesRepList[0] : null;
-        
-        const numItems = Math.floor(Math.random() * 2) + 1;
-        const items = [];
-        let total = 0;
-        
-        for (let j = 0; j < numItems; j++) {
-            const prod = productList[Math.floor(Math.random() * productList.length)];
-            const isSqm = prod.unit.includes('sqm');
-            const qty = isSqm ? (Math.floor(Math.random() * 50) + 5.5) : (Math.floor(Math.random() * 50) + 5); 
-            const price = prod.price; 
-            
-            total += price * qty;
-            items.push({
-                product_id: prod.id,
-                quantity: qty,
-                price_at_sale: price
-            });
-        }
+      const daysAgo = Math.floor(Math.random() * 60); // 2 months history
+      const date = new Date();
+      date.setDate(date.getDate() - daysAgo);
 
-        const deposit = total * 0.5; 
-        const orderNum = `INV-2023-${1000 + i}`;
+      const customer = customerList[Math.floor(Math.random() * customerList.length)];
+      const salesRep = salesRepList.length > 0 ? salesRepList[0] : null;
 
-        this.createOrderWithDate({
-            id: 0,
-            order_number: orderNum,
-            contact_id: customer.id,
-            sales_rep_id: salesRep ? salesRep.id : null,
-            total_amount: total,
-<<<<<<< HEAD
-            discount: 0,
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-            deposit: deposit,
-            payment_method: 'transfer',
-            created_at: date.toISOString()
-        } as Order, items as any[]);
+      const numItems = Math.floor(Math.random() * 2) + 1;
+      const items = [];
+      let total = 0;
+
+      for (let j = 0; j < numItems; j++) {
+        const prod = productList[Math.floor(Math.random() * productList.length)];
+        const isSqm = prod.unit.includes('sqm');
+        const qty = isSqm ? (Math.floor(Math.random() * 50) + 5.5) : (Math.floor(Math.random() * 50) + 5);
+        const price = prod.price;
+
+        total += price * qty;
+        items.push({
+          product_id: prod.id,
+          quantity: qty,
+          price_at_sale: price
+        });
+      }
+
+      const deposit = total * 0.5;
+      const orderNum = `INV-2023-${1000 + i}`;
+
+      this.createOrderWithDate({
+        id: 0,
+        order_number: orderNum,
+        contact_id: customer.id,
+        sales_rep_id: salesRep ? salesRep.id : null,
+        total_amount: total,
+        discount: 0,
+        deposit: deposit,
+        payment_method: 'transfer',
+        created_at: date.toISOString()
+      } as Order, items as any[]);
     }
 
     // SEED PURCHASE ORDERS
     for (let i = 0; i < 8; i++) {
-        const daysAgo = Math.floor(Math.random() * 45); 
-        const date = new Date();
-        date.setDate(date.getDate() - daysAgo);
+      const daysAgo = Math.floor(Math.random() * 45);
+      const date = new Date();
+      date.setDate(date.getDate() - daysAgo);
 
-        const distributor = distributorList.length > 0 ? distributorList[Math.floor(Math.random() * distributorList.length)] : null;
-        const shippingRef = `CN-SH-${202300 + i}`;
-        
-        // Items
-        const numItems = Math.floor(Math.random() * 3) + 1;
-        const items: any[] = [];
-        
-        for (let j = 0; j < numItems; j++) {
-             const prod = productList[Math.floor(Math.random() * productList.length)];
-             const isSqm = prod.unit.includes('sqm');
-             const qty = isSqm ? (Math.floor(Math.random() * 100) + 50) : (Math.floor(Math.random() * 100) + 20); 
-             items.push({ product_id: prod.id, quantity: qty });
-        }
+      const distributor = distributorList.length > 0 ? distributorList[Math.floor(Math.random() * distributorList.length)] : null;
+      const shippingRef = `CN-SH-${202300 + i}`;
 
-        const status = i < 4 ? 'received' : 'shipped';
-        const expectedDate = new Date();
-        expectedDate.setDate(date.getDate() + 30);
+      // Items
+      const numItems = Math.floor(Math.random() * 3) + 1;
+      const items: any[] = [];
 
-        this.createPurchaseOrderWithDate({
-            id: 0,
-            distributor_id: distributor ? distributor.id : null,
-            shipping_ref: shippingRef,
-            status: status as any,
-            expected_arrival_date: expectedDate.toISOString().split('T')[0],
-            created_at: date.toISOString()
-        }, items);
+      for (let j = 0; j < numItems; j++) {
+        const prod = productList[Math.floor(Math.random() * productList.length)];
+        const isSqm = prod.unit.includes('sqm');
+        const qty = isSqm ? (Math.floor(Math.random() * 100) + 50) : (Math.floor(Math.random() * 100) + 20);
+        items.push({ product_id: prod.id, quantity: qty });
+      }
+
+      const status = i < 4 ? 'received' : 'shipped';
+      const expectedDate = new Date();
+      expectedDate.setDate(date.getDate() + 30);
+
+      this.createPurchaseOrderWithDate({
+        id: 0,
+        distributor_id: distributor ? distributor.id : null,
+        shipping_ref: shippingRef,
+        status: status as any,
+        expected_arrival_date: expectedDate.toISOString().split('T')[0],
+        created_at: date.toISOString()
+      }, items);
     }
   }
 
   // --- Seed Helpers ---
 
   private createOrderWithDate(order: Order, items: any[]) {
-      const orderId = this.insertOrderRecord(order);
-      this.insertOrderItemsAndLog(orderId, items, order.created_at);
+    const orderId = this.insertOrderRecord(order);
+    this.insertOrderItemsAndLog(orderId, items, order.created_at);
   }
 
   private createPurchaseOrderWithDate(po: PurchaseOrder, items: any[]) {
-      this.db.run("INSERT INTO purchase_orders (distributor_id, shipping_ref, status, expected_arrival_date, created_at) VALUES (?, ?, ?, ?, ?)",
-        [po.distributor_id, po.shipping_ref, po.status, po.expected_arrival_date, po.created_at]);
-      const poId = this.db.exec("SELECT last_insert_rowid()")[0].values[0][0];
-      const stmt = this.db.prepare("INSERT INTO purchase_order_items (po_id, product_id, quantity) VALUES (?, ?, ?)");
-      items.forEach(i => stmt.run([poId, i.product_id, i.quantity]));
-      stmt.free();
-      
-      // If received, update stock
-      if (po.status === 'received') {
-         // Logic similar to receivePurchaseOrder but with historical date
-         const stockStmt = this.db.prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
-         const logStmt = this.db.prepare("INSERT INTO inventory_logs (product_id, type, quantity, reference_id, created_at) VALUES (?, ?, ?, ?, ?)");
-         items.forEach(item => {
-            stockStmt.run([item.quantity, item.product_id]);
-            logStmt.run([item.product_id, 'purchase', item.quantity, poId, po.created_at]);
-         });
-         stockStmt.free();
-         logStmt.free();
-      }
+    this.db.run("INSERT INTO purchase_orders (distributor_id, shipping_ref, status, expected_arrival_date, created_at) VALUES (?, ?, ?, ?, ?)",
+      [po.distributor_id, po.shipping_ref, po.status, po.expected_arrival_date, po.created_at]);
+    const poId = this.db.exec("SELECT last_insert_rowid()")[0].values[0][0];
+    const stmt = this.db.prepare("INSERT INTO purchase_order_items (po_id, product_id, quantity) VALUES (?, ?, ?)");
+    items.forEach(i => stmt.run([poId, i.product_id, i.quantity]));
+    stmt.free();
+
+    // If received, update stock
+    if (po.status === 'received') {
+      // Logic similar to receivePurchaseOrder but with historical date
+      const stockStmt = this.db.prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
+      const logStmt = this.db.prepare("INSERT INTO inventory_logs (product_id, type, quantity, reference_id, created_at) VALUES (?, ?, ?, ?, ?)");
+      items.forEach(item => {
+        stockStmt.run([item.quantity, item.product_id]);
+        logStmt.run([item.product_id, 'purchase', item.quantity, poId, po.created_at]);
+      });
+      stockStmt.free();
+      logStmt.free();
+    }
   }
 
   // --- Core Transaction Logic with Inventory Logging ---
@@ -450,43 +432,35 @@ export class DatabaseService {
   }
 
   private insertOrderRecord(order: Order): number {
-<<<<<<< HEAD
-     const stmt = this.db.prepare("INSERT INTO orders (order_number, contact_id, sales_rep_id, total_amount, discount, deposit, payment_method, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-=======
-     const stmt = this.db.prepare("INSERT INTO orders (order_number, contact_id, sales_rep_id, total_amount, deposit, payment_method, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-      stmt.run([
-        order.order_number,
-        order.contact_id, 
-        order.sales_rep_id, 
-<<<<<<< HEAD
-        order.total_amount, // Final total after discount
-        order.discount || 0,
-=======
-        order.total_amount, 
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-        order.deposit || 0,
-        order.payment_method, 
-        order.created_at
-      ]);
-      stmt.free();
-      return this.db.exec("SELECT last_insert_rowid()")[0].values[0][0];
+    const stmt = this.db.prepare("INSERT INTO orders (order_number, contact_id, sales_rep_id, total_amount, discount, deposit, payment_method, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    stmt.run([
+      order.order_number,
+      order.contact_id,
+      order.sales_rep_id,
+      order.total_amount, // Final total after discount
+      order.discount || 0,
+      order.deposit || 0,
+      order.payment_method,
+      order.created_at
+    ]);
+    stmt.free();
+    return this.db.exec("SELECT last_insert_rowid()")[0].values[0][0];
   }
 
   private insertOrderItemsAndLog(orderId: number, items: any[], dateStr: string) {
-      const itemStmt = this.db.prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_sale) VALUES (?, ?, ?, ?)");
-      const stockStmt = this.db.prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
-      const logStmt = this.db.prepare("INSERT INTO inventory_logs (product_id, type, quantity, reference_id, created_at) VALUES (?, ?, ?, ?, ?)");
+    const itemStmt = this.db.prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_sale) VALUES (?, ?, ?, ?)");
+    const stockStmt = this.db.prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+    const logStmt = this.db.prepare("INSERT INTO inventory_logs (product_id, type, quantity, reference_id, created_at) VALUES (?, ?, ?, ?, ?)");
 
-      items.forEach((item: any) => {
-        itemStmt.run([orderId, item.product_id, item.quantity, item.price_at_sale]);
-        stockStmt.run([item.quantity, item.product_id]);
-        logStmt.run([item.product_id, 'sale', -item.quantity, orderId, dateStr]);
-      });
+    items.forEach((item: any) => {
+      itemStmt.run([orderId, item.product_id, item.quantity, item.price_at_sale]);
+      stockStmt.run([item.quantity, item.product_id]);
+      logStmt.run([item.product_id, 'sale', -item.quantity, orderId, dateStr]);
+    });
 
-      itemStmt.free();
-      stockStmt.free();
-      logStmt.free();
+    itemStmt.free();
+    stockStmt.free();
+    logStmt.free();
   }
 
   // --- Purchase Order Logic with Logs ---
@@ -507,7 +481,6 @@ export class DatabaseService {
     this.save();
   }
 
-<<<<<<< HEAD
   // --- Workspace Logic (New) ---
 
   getPendingOrders(): Order[] {
@@ -537,62 +510,46 @@ export class DatabaseService {
   }
 
   updateOrderDeposit(orderId: number, additionalAmount: number) {
-      if (!this.db) return;
-      this.db.run("UPDATE orders SET deposit = deposit + ? WHERE id = ?", [additionalAmount, orderId]);
-      this.save();
+    if (!this.db) return;
+    this.db.run("UPDATE orders SET deposit = deposit + ? WHERE id = ?", [additionalAmount, orderId]);
+    this.save();
   }
 
   // --- User Management ---
   getUsers(): User[] {
-      if (!this.db) return [];
-=======
-  // --- User Management ---
-  getUsers(): User[] {
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-      const res = this.db.exec("SELECT id, username, role, name, last_active FROM users");
-      return res.length ? this.mapResults(res[0]) : [];
+    if (!this.db) return [];
+    const res = this.db.exec("SELECT id, username, role, name, last_active FROM users");
+    return res.length ? this.mapResults(res[0]) : [];
   }
 
   deleteUser(id: number) {
-      if (!this.db) return;
-      this.db.run("DELETE FROM users WHERE id = ?", [id]);
-      this.save();
+    if (!this.db) return;
+    this.db.run("DELETE FROM users WHERE id = ?", [id]);
+    this.save();
   }
 
   // Auth
   login(username: string, password: string): { user: User | null, error?: string } {
-<<<<<<< HEAD
     if (!this.db) return { user: null };
     const res = this.db.exec("SELECT * FROM users WHERE username = ? AND password = ?", [username, password]);
     if (!res.length) return { user: null };
     const user = this.mapResults(res[0])[0] as User;
-    
+
     // REMOVED CONCURRENCY CHECK HERE TO ALLOW MULTIPLE LOGINS
-    
-=======
-    const res = this.db.exec("SELECT * FROM users WHERE username = ? AND password = ?", [username, password]);
-    if (!res.length) return { user: null };
-    const user = this.mapResults(res[0])[0] as User;
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
+
     this.db.run("UPDATE users SET is_logged_in = 1, last_active = ? WHERE id = ?", [new Date().toISOString(), user.id]);
     this.save();
     return { user };
   }
-  
+
   logout(userId: number) {
-<<<<<<< HEAD
     if (!this.db) return;
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run("UPDATE users SET is_logged_in = 0 WHERE id = ?", [userId]);
     this.save();
   }
 
   registerUser(u: string, p: string, n: string, role: string = 'employee'): boolean {
-<<<<<<< HEAD
     if (!this.db) return false;
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec("SELECT id FROM users WHERE username = ?", [u]);
     if (res.length > 0) return false;
     this.db.run("INSERT INTO users (username, password, role, name, is_logged_in) VALUES (?, ?, ?, ?, 0)", [u, p, role, n]);
@@ -602,39 +559,32 @@ export class DatabaseService {
 
   // Settings
   getSettings(): Record<string, string> {
-<<<<<<< HEAD
     if (!this.db) return {};
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec("SELECT key, value FROM system_settings");
     if (!res.length) return {};
     const settings: Record<string, string> = {};
     this.mapResults(res[0]).forEach((row: any) => settings[row.key] = row.value);
-    
+
     // Default fallback for currency
-    if(!settings['display_currency']) settings['display_currency'] = 'AED';
-    if(!settings['exchange_rate']) settings['exchange_rate'] = '1';
-    
+    if (!settings['display_currency']) settings['display_currency'] = 'AED';
+    if (!settings['exchange_rate']) settings['exchange_rate'] = '1';
+
     return settings;
   }
 
   saveSetting(key: string, value: string) {
-<<<<<<< HEAD
     if (!this.db) return;
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run("INSERT OR REPLACE INTO system_settings (key, value) VALUES (?, ?)", [key, value]);
     this.save();
   }
 
   // Lookups
   getCategories(): Category[] {
-<<<<<<< HEAD
     if (!this.db) return [];
     const res = this.db.exec("SELECT * FROM categories ORDER BY name ASC");
     return res.length ? this.mapResults(res[0]) : [];
   }
-  addCategory(name: string) { if (!this.db) return; try { this.db.run("INSERT INTO categories (name) VALUES (?)", [name]); this.save(); } catch(e){} }
+  addCategory(name: string) { if (!this.db) return; try { this.db.run("INSERT INTO categories (name) VALUES (?)", [name]); this.save(); } catch (e) { } }
   deleteCategory(id: number) { if (!this.db) return; this.db.run("DELETE FROM categories WHERE id=?", [id]); this.save(); }
 
   getUnits(): Unit[] {
@@ -642,29 +592,12 @@ export class DatabaseService {
     const res = this.db.exec("SELECT * FROM units ORDER BY name ASC");
     return res.length ? this.mapResults(res[0]) : [];
   }
-  addUnit(name: string) { if (!this.db) return; try { this.db.run("INSERT INTO units (name) VALUES (?)", [name]); this.save(); } catch(e){} }
+  addUnit(name: string) { if (!this.db) return; try { this.db.run("INSERT INTO units (name) VALUES (?)", [name]); this.save(); } catch (e) { } }
   deleteUnit(id: number) { if (!this.db) return; this.db.run("DELETE FROM units WHERE id=?", [id]); this.save(); }
 
   // Products
   getProducts(): Product[] {
     if (!this.db) return [];
-=======
-    const res = this.db.exec("SELECT * FROM categories ORDER BY name ASC");
-    return res.length ? this.mapResults(res[0]) : [];
-  }
-  addCategory(name: string) { try { this.db.run("INSERT INTO categories (name) VALUES (?)", [name]); this.save(); } catch(e){} }
-  deleteCategory(id: number) { this.db.run("DELETE FROM categories WHERE id=?", [id]); this.save(); }
-
-  getUnits(): Unit[] {
-    const res = this.db.exec("SELECT * FROM units ORDER BY name ASC");
-    return res.length ? this.mapResults(res[0]) : [];
-  }
-  addUnit(name: string) { try { this.db.run("INSERT INTO units (name) VALUES (?)", [name]); this.save(); } catch(e){} }
-  deleteUnit(id: number) { this.db.run("DELETE FROM units WHERE id=?", [id]); this.save(); }
-
-  // Products
-  getProducts(): Product[] {
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec(`
       SELECT p.*, (SELECT COALESCE(SUM(poi.quantity), 0) FROM purchase_order_items poi JOIN purchase_orders po ON poi.po_id = po.id WHERE poi.product_id = p.id AND po.status != 'received') as incoming
       FROM products p ORDER BY p.id DESC
@@ -672,30 +605,23 @@ export class DatabaseService {
     return res.length ? this.mapResults(res[0]) : [];
   }
   addProduct(p: Product) {
-<<<<<<< HEAD
     if (!this.db) return;
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-    this.db.run("INSERT INTO products (name, price, cost, stock, category, unit, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)", 
+    this.db.run("INSERT INTO products (name, price, cost, stock, category, unit, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [p.name, p.price, p.cost, p.stock, p.category, p.unit || '', new Date().toISOString()]);
     this.save();
   }
   updateProduct(p: Product) {
-<<<<<<< HEAD
     if (!this.db) return;
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-    this.db.run("UPDATE products SET name=?, price=?, cost=?, stock=?, category=?, unit=? WHERE id=?", 
+    this.db.run("UPDATE products SET name=?, price=?, cost=?, stock=?, category=?, unit=? WHERE id=?",
       [p.name, p.price, p.cost, p.stock, p.category, p.unit, p.id]);
     this.save();
   }
-<<<<<<< HEAD
   deleteProduct(id: number) { if (!this.db) return; this.db.run("DELETE FROM products WHERE id=?", [id]); this.save(); }
 
   // LOGS (New Feature)
   getProductLogs(productId: number): any[] {
-     if (!this.db) return [];
-     const res = this.db.exec(`
+    if (!this.db) return [];
+    const res = this.db.exec(`
         SELECT l.*, 
           CASE 
              WHEN l.type = 'sale' THEN (SELECT order_number FROM orders WHERE id = l.reference_id)
@@ -706,35 +632,23 @@ export class DatabaseService {
         WHERE l.product_id = ? 
         ORDER BY l.created_at DESC
      `, [productId]);
-     return res.length ? this.mapResults(res[0]) : [];
+    return res.length ? this.mapResults(res[0]) : [];
   }
 
   // Contacts
   getContacts(): Contact[] {
     if (!this.db) return [];
-=======
-  deleteProduct(id: number) { this.db.run("DELETE FROM products WHERE id=?", [id]); this.save(); }
-
-  // Contacts
-  getContacts(): Contact[] {
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec("SELECT * FROM contacts ORDER BY name ASC");
     return res.length ? this.mapResults(res[0]) : [];
   }
   getCustomers(): Contact[] {
-<<<<<<< HEAD
     if (!this.db) return [];
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec("SELECT * FROM contacts WHERE type = 'customer' ORDER BY name ASC");
     return res.length ? this.mapResults(res[0]) : [];
   }
   addContact(c: Contact) {
-<<<<<<< HEAD
     if (!this.db) return;
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
-    this.db.run("INSERT INTO contacts (name, phone, email, address, type) VALUES (?, ?, ?, ?, ?)", 
+    this.db.run("INSERT INTO contacts (name, phone, email, address, type) VALUES (?, ?, ?, ?, ?)",
       [c.name, c.phone || '', c.email || '', c.address || '', c.type]);
     this.save();
   }
@@ -742,18 +656,12 @@ export class DatabaseService {
 
   // Orders
   getOrders(): Order[] {
-<<<<<<< HEAD
     if (!this.db) return [];
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec(`SELECT o.*, c.name as sales_rep_name FROM orders o LEFT JOIN contacts c ON o.sales_rep_id = c.id ORDER BY o.created_at DESC`);
     return res.length ? this.mapResults(res[0]) : [];
   }
   getOrderItems(orderId: number): OrderItem[] {
-<<<<<<< HEAD
     if (!this.db) return [];
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec(`SELECT oi.*, p.name as product_name, p.unit FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?`, [orderId]);
     return res.length ? this.mapResults(res[0]) : [];
   }
@@ -770,10 +678,7 @@ export class DatabaseService {
     return poId;
   }
   getPurchaseOrders(): PurchaseOrder[] {
-<<<<<<< HEAD
     if (!this.db) return [];
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec(`
       SELECT po.*, c.name as distributor_name 
       FROM purchase_orders po 
@@ -783,33 +688,26 @@ export class DatabaseService {
     return res.length ? this.mapResults(res[0]) : [];
   }
   getPurchaseOrderItems(poId: number): PurchaseOrderItem[] {
-<<<<<<< HEAD
     if (!this.db) return [];
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     const res = this.db.exec(`SELECT poi.*, p.name as product_name, p.unit FROM purchase_order_items poi LEFT JOIN products p ON poi.product_id = p.id WHERE poi.po_id = ?`, [poId]);
     return res.length ? this.mapResults(res[0]) : [];
   }
   updatePurchaseOrder(po: PurchaseOrder) {
-<<<<<<< HEAD
     if (!this.db) return;
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
     this.db.run("UPDATE purchase_orders SET expected_arrival_date=?, status=?, shipping_ref=? WHERE id=?", [po.expected_arrival_date, po.status, po.shipping_ref, po.id]);
     this.save();
   }
 
   // Stats
   getDashboardStats(): DashboardStats {
-<<<<<<< HEAD
     if (!this.db) return { totalSales: 0, orderCount: 0, lowStockCount: 0, recentOrders: [] };
     const settings = this.getSettings();
     const lowStockThreshold = parseInt(settings['low_stock_threshold'] || '50');
-    
+
     // Recent orders always last 10
     const orders = this.getOrders().slice(0, 10);
     const lowStockCount = this.db.exec(`SELECT COUNT(*) FROM products WHERE stock < ${lowStockThreshold}`)[0]?.values[0][0] || 0;
-    
+
     // Total stats (All Time default fallback if analytics not used)
     const totalSales = this.db.exec("SELECT SUM(total_amount) FROM orders")[0]?.values[0][0] || 0;
     const orderCount = this.db.exec("SELECT COUNT(*) FROM orders")[0]?.values[0][0] || 0;
@@ -818,13 +716,13 @@ export class DatabaseService {
   }
 
   // NEW: Flexible Analytics Method
-  getAnalyticsData(startDate: string | null, endDate: string | null): { totalSales: number, totalReceived: number, totalPending: number, totalOrders: number, salesTrend: {date: string, amount: number}[] } {
+  getAnalyticsData(startDate: string | null, endDate: string | null): { totalSales: number, totalReceived: number, totalPending: number, totalOrders: number, salesTrend: { date: string, amount: number }[] } {
     if (!this.db) return { totalSales: 0, totalReceived: 0, totalPending: 0, totalOrders: 0, salesTrend: [] };
 
     let whereClause = "";
     if (startDate && endDate) {
-        // SQLite string comparison works for ISO dates
-        whereClause = `WHERE date(created_at) >= date('${startDate}') AND date(created_at) <= date('${endDate}')`;
+      // SQLite string comparison works for ISO dates
+      whereClause = `WHERE date(created_at) >= date('${startDate}') AND date(created_at) <= date('${endDate}')`;
     }
 
     // 1. Total Sales & Received & Pending
@@ -836,7 +734,7 @@ export class DatabaseService {
         FROM orders 
         ${whereClause}
     `);
-    
+
     const totalSales = salesRes.length ? (salesRes[0].values[0][0] || 0) : 0;
     const totalReceived = salesRes.length ? (salesRes[0].values[0][1] || 0) : 0;
     const totalPending = salesRes.length ? (salesRes[0].values[0][2] || 0) : 0;
@@ -857,21 +755,12 @@ export class DatabaseService {
     const salesTrend = trendRes.length ? this.mapResults(trendRes[0]).map((r: any) => ({ date: r.d, amount: r.total })) : [];
 
     return { totalSales, totalReceived, totalPending, totalOrders, salesTrend };
-=======
-    const settings = this.getSettings();
-    const lowStockThreshold = parseInt(settings['low_stock_threshold'] || '50');
-    
-    const orders = this.getOrders().slice(0, 10);
-    const totalSales = this.db.exec("SELECT SUM(total_amount) FROM orders")[0]?.values[0][0] || 0;
-    const orderCount = this.db.exec("SELECT COUNT(*) FROM orders")[0]?.values[0][0] || 0;
-    const lowStockCount = this.db.exec(`SELECT COUNT(*) FROM products WHERE stock < ${lowStockThreshold}`)[0]?.values[0][0] || 0;
-    return { totalSales, orderCount, lowStockCount, recentOrders: orders };
   }
 
-  getSalesLast7Days(): {date: string, amount: number}[] {
+  getSalesLast7Days(): { date: string, amount: number }[] {
+    if (!this.db) return [];
     const res = this.db.exec(`SELECT date(created_at) as d, SUM(total_amount) as total FROM orders WHERE created_at >= date('now', '-30 days') GROUP BY d ORDER BY d ASC`);
     return res.length ? this.mapResults(res[0]).map((r: any) => ({ date: r.d, amount: r.total })) : [];
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
   }
 
   private mapResults(result: any) {

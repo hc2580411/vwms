@@ -8,10 +8,8 @@ import Orders from './pages/Orders';
 import Settings from './pages/Settings';
 import Relationships from './pages/Relationships';
 import PurchaseOrders from './pages/PurchaseOrders';
-<<<<<<< HEAD
-import Workspace from './pages/Workspace'; // Import
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
+
+import Workspace from './pages/Workspace'; 
 import Login from './components/Login';
 import { dbService } from './services/db';
 import { Language, User, Order, OrderItem, CurrencyConfig, CurrencyCode } from './types';
@@ -72,10 +70,7 @@ const App: React.FC = () => {
       <Layout lang={lang} setLang={setLang} user={user} onLogout={handleLogout}>
         <Routes>
           <Route path="/" element={<Dashboard lang={lang} currency={currencyConfig} />} />
-<<<<<<< HEAD
           <Route path="/workspace" element={<Workspace lang={lang} currency={currencyConfig} />} />
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
           <Route path="/orders" element={<Orders lang={lang} currentUser={user} currency={currencyConfig} />} />
           
           {/* Admin Only Routes */}

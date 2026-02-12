@@ -1,13 +1,9 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Package, 
-  History, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Package,
+  History,
+  Settings,
   Users,
   Menu,
   X,
@@ -23,21 +19,14 @@ import {
   MapPin,
   Briefcase,
   ShoppingCart,
-<<<<<<< HEAD
   Ship,
   Calendar,
   ClipboardList // New Icon for Workspace
-=======
-  Ship
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
 } from 'lucide-react';
 
 export const ICONS = {
   Dashboard: <LayoutDashboard size={20} />,
-<<<<<<< HEAD
   Workspace: <ClipboardList size={20} />,
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
   Inventory: <Package size={20} />,
   Orders: <History size={20} />,
   PurchaseOrders: <Ship size={20} />,
@@ -57,27 +46,16 @@ export const ICONS = {
   Mail: <Mail size={14} />,
   Address: <MapPin size={14} />,
   POS: <ShoppingCart size={20} />,
-<<<<<<< HEAD
   Calendar: <Calendar size={16} />,
-=======
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
 };
 
 // Roles: 'all' means everyone, 'admin' means only admin
 export const ROUTES = [
-<<<<<<< HEAD
   { path: '/', name: 'overview', icon: ICONS.Dashboard, role: 'all' },
   { path: '/workspace', name: 'workspace', icon: ICONS.Workspace, role: 'all' }, // New Route
-=======
-  { path: '/', name: 'dashboard', icon: ICONS.Dashboard, role: 'all' },
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
   { path: '/orders', name: 'orders', icon: ICONS.Orders, role: 'all' },
   { path: '/purchase-orders', name: 'purchase_orders', icon: ICONS.PurchaseOrders, role: 'admin' },
   { path: '/inventory', name: 'inventory', icon: ICONS.Inventory, role: 'admin' },
   { path: '/relationships', name: 'relationships', icon: ICONS.Relationships, role: 'admin' },
   { path: '/settings', name: 'settings', icon: ICONS.Settings, role: 'admin' },
-<<<<<<< HEAD
 ];
-=======
-];
->>>>>>> 4b13eafc19fea19f6da9cd2046a1d4a438a830f5
